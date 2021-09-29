@@ -26,3 +26,9 @@ find_package(spdlog REQUIRED)
 add_executable(main src/main.cpp)
 target_link_libraries(main spdlog::spdlog pthread rt)
 
+add_executable(client src/client.cpp)
+target_link_libraries(client)
+
+add_executable(cb src/cb.cpp)
+target_link_libraries(cb spdlog::spdlog pthread rt)
+
