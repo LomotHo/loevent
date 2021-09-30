@@ -2,4 +2,4 @@
 cd build
 cmake ..
 make
-./main 3005
+./main

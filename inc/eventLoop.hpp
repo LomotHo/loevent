@@ -1,63 +1,104 @@
 #ifndef __LOMOT_REACTOR_EVENTLOOP__
 #define __LOMOT_REACTOR_EVENTLOOP__
 
+#include <errno.h>
+#include <map>
 #include <stdlib.h>
+#include <string>
 #include <sys/epoll.h>
 
-#include <map>
-#include <string>
-
+#include "channel.hpp"
 #include "utils.hpp"
 
 #define MAX_EVENTS 1024
-typedef std::shared_ptr<Socket> SocketPtr;
 
-typedef std::map<int, SocketPtr> SocketMap;
-// typedef std::vector<Socket*> SocketList;
+typedef std::shared_ptr<Channel> ChannelPtr;
+typedef std::map<int, ChannelPtr> ChannelMap;
 
 class EventLoop {
- private:
+private:
   int maxEventNum_;
   // SocketList socketList_;
-  SocketMap socketMap_;
+  ChannelMap channelMap_;
+  int epollfd_;
+  struct epoll_event *tmpEvents_;
 
- public:
+public:
   EventLoop(int maxEventNum);
-  ~EventLoop();
+  ~EventLoop() { delete tmpEvents_; };
   void loop();
+  Channel &addChannel(int fd, EventCallback cb, int mask);
   // void addEvent();
 };
 
-EventLoop::EventLoop(int maxEventNum) : maxEventNum_(maxEventNum) {}
+EventLoop::EventLoop(int maxEventNum) : maxEventNum_(maxEventNum) {
+  tmpEvents_ = new struct epoll_event[maxEventNum];
+  if ((epollfd_ = epoll_create(maxEventNum_)) < 0) {
+    error_quit("Error creating epoll...");
+  }
+}
 
-EventLoop::~EventLoop() {}
+// EventLoop::~EventLoop() {}
 
 void EventLoop::loop() {
-  struct epoll_event ev, events[maxEventNum_];
-  int new_events, sock_conn_fd, epollfd;
-
-  if ((epollfd = epoll_create(maxEventNum_)) < 0) {
-    printf("Error creating epoll..\n");
-    exit(1);
-  }
+  // struct epoll_event ev, events[maxEventNum_];
+  spdlog::debug("EventLoop loop");
 
   for (;;) {
-    new_events = epoll_wait(epollfd, events, maxEventNum_, -1);
-    if (new_events == -1) {
-      error_quit("Error in epoll_wait..");
+    int newEventNum = epoll_wait(epollfd_, tmpEvents_, maxEventNum_, -1);
+    if (newEventNum == -1) {
+      error_quit("Error in epoll_wait...");
     }
 
-    for (int i = 0; i < new_events; ++i) {
-      int sockfd = events[i].data.fd;
-
-      socketMap_[sockfd] = std::make_shared<Socket>(sockfd);
-
-      if (events[i].events & EPOLLIN) {
+    for (int i = 0; i < newEventNum; ++i) {
+      int sockfd = tmpEvents_[i].data.fd;
+      if (tmpEvents_[i].events & EPOLLIN) {
+        // auto cb =
+        channelMap_[sockfd]->readCallback();
       }
-      if (events[i].events & EPOLLOUT) {
+      if (tmpEvents_[i].events & EPOLLOUT) {
+        channelMap_[sockfd]->writeCallback();
       }
+      // tmpEvents_[i].events
+
+      // channelMap_[sockfd] = std::make_shared<Channel>();
     }
   }
 }
 
-#endif  // !__LOMOT_REACTOR_EVENTLOOP__
+Channel &EventLoop::addChannel(int fd, EventCallback cb, int mask) {
+  spdlog::debug("addChannel fd: {}", fd);
+
+  // 是否已存在channel
+  if (channelMap_.find(fd) == channelMap_.end()) {
+    channelMap_[fd] = std::make_shared<Channel>();
+  }
+
+  struct epoll_event ev;
+  if (mask == 0) {
+    ev.events = EPOLLIN | EPOLLET;
+    spdlog::debug("addChannel setReadCallback fd: {}", fd);
+
+    channelMap_[fd]->setReadCallback(cb);
+  } else if (mask == 1) {
+    ev.events = EPOLLOUT | EPOLLET;
+    spdlog::debug("addChannel setWriteCallback fd: {}", fd);
+    channelMap_[fd]->setWriteCallback(cb);
+  }
+  ev.data.fd = fd;
+  // if (channelMap_.find(fd) == channelMap_.end()) {
+  // }
+  if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &ev) == -1) {
+    printf("errno: %d\n", errno);
+    error_quit("Error adding new event to epoll..");
+  }
+  return *channelMap_[fd];
+  //  else {
+  //   if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ev) == -1) {
+  //     printf("errno: %d\n", errno);
+  //     error_quit("Error mod epoll event..");
+  //   }
+  // }
+}
+
+#endif // !__LOMOT_REACTOR_EVENTLOOP__
