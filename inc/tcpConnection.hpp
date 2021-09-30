@@ -28,6 +28,7 @@ TcpConnection::TcpConnection(EventLoop &loop, std::string connName, int sockfd,
 
 void TcpConnection::send(char *message, int len) {
   std::vector<char> buf(message, message + len);
+  spdlog::debug("setWriteCallback");
   channel_.setWriteCallback([this, buf]() { s.socketSend(buf); });
   // loop_.addChannel(
   //     s.sockfd, [this, buf]() { s.socketSend(buf); }, 1);
