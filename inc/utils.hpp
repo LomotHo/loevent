@@ -3,6 +3,7 @@
 
 #include <sys/socket.h>
 
+#include <cerrno>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -19,6 +20,8 @@ class noncopyable {
 
 void error_quit(std::string msg) {
   std::cout << msg << std::endl;
+  std::cout << "errno: " << errno << std::endl;
+  // printf("errno: %d\n", errno);
   exit(1);
 }
 

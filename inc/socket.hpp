@@ -3,9 +3,9 @@
 
 class Socket : noncopyable {
  public:
-  Socket(int fd) : sockfd(fd) {}
+  Socket(int fd) : sockfd_(fd) {}
   // ~Socket() {}
-  int sockfd;
+  // int sockfd;
   // void socketSend(std::vector<char> msg) {
   //   spdlog::debug("socketSend {}", msg.data());
   //   // char *temp_ptr = msg.empty() ? 0 : &msg[0];
@@ -16,10 +16,13 @@ class Socket : noncopyable {
   //   send(sockfd, str, msg.size() + 1, 0);
   // }
   void socketSend(void *buf, int len) {
-    spdlog::debug("socketSend2 {} | fd: {}", buf, sockfd);
-    send(sockfd, buf, len, 0);
+    spdlog::debug("[socketSend] | len: {} | fd: {} | data: {}", len, sockfd_,
+                  (char *)buf);
+    send(sockfd_, buf, len, 0);
   }
+  int getFd() { return sockfd_; }
 
  private:
+  int sockfd_;
   int state_;
 };

@@ -7,7 +7,6 @@
 class TcpConnection : noncopyable,
                       public std::enable_shared_from_this<TcpConnection> {
  public:
-  // TcpConnection(EventLoop &loop, std::string connName, int sockfd);
   TcpConnection(EventLoop &loop, std::string connName, int sockfd)
       : socket_(sockfd), connName_(connName), loop_(loop) {}
 
@@ -22,6 +21,8 @@ class TcpConnection : noncopyable,
   void send(std::vector<char> msg) {
     socket_.socketSend(msg.data(), msg.size());
   }
+  int getFd() { return socket_.getFd(); }
+  std::string getName() { return connName_; }
 
  private:
   // Channel &channel_;
