@@ -1,4 +1,6 @@
-// #include <fcntl.h>
+#ifndef __LOMOT_REACTOR_TCP_SERVER__
+#define __LOMOT_REACTOR_TCP_SERVER__
+
 #include <netinet/in.h>
 
 #include <functional>
@@ -79,3 +81,4 @@ class TcpServer {
   }
   void start(int a) {}
 };
+#endif  // !__LOMOT_REACTOR_TCP_SERVER__

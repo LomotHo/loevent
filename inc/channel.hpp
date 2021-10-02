@@ -1,6 +1,8 @@
+#ifndef __LOMOT_REACTOR_CHANNEL__
+#define __LOMOT_REACTOR_CHANNEL__
+
 #include <functional>
 
-// #include "eventLoop.hpp"
 #include "spdlog/spdlog.h"
 
 // typedef std::function<void(void)> ReadEventCallback;
@@ -17,3 +19,5 @@ class Channel {
 
  private:
 };
+
+#endif  // !__LOMOT_REACTOR_CHANNEL__

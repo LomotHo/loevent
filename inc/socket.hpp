@@ -1,3 +1,6 @@
+#ifndef __LOMOT_REACTOR_SOCKET__
+#define __LOMOT_REACTOR_SOCKET__
+
 #include "spdlog/spdlog.h"
 #include "utils.hpp"
 
@@ -16,3 +19,5 @@ class Socket : noncopyable {
   int sockfd_;
   int state_;
 };
+
+#endif  // !__LOMOT_REACTOR_SOCKET__

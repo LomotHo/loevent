@@ -1,3 +1,6 @@
+#ifndef __LOMOT_REACTOR_TCP_CONNECTION__
+#define __LOMOT_REACTOR_TCP_CONNECTION__
+
 #include <string>
 #include <vector>
 
@@ -32,3 +35,5 @@ class TcpConnection : noncopyable,
 };
 
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+
+#endif  // !__LOMOT_REACTOR_TCP_CONNECTION__

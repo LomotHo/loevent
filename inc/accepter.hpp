@@ -1,3 +1,6 @@
+#ifndef __LOMOT_REACTOR_ACCEPTER__
+#define __LOMOT_REACTOR_ACCEPTER__
+
 #include <netinet/in.h>
 
 #include <cstring>
@@ -44,3 +47,5 @@ class Accepter {
   int listenfd_;
   struct sockaddr_in servaddr_;
 };
+
+#endif  // !__LOMOT_REACTOR_ACCEPTER__

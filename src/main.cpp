@@ -5,22 +5,12 @@
 
 void onConnection(const TcpConnectionPtr &conn) {
   spdlog::info("[onConnection] fd: {}", conn->getFd());
-  // char buf[] = "welcome\n";
-  // conn->send(buf, sizeof(buf));
 }
 
 void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
   spdlog::info("[onMessage] recv len: {}", len);
   printhexDump(buf, len);
   conn->send(buf, len);
-
-  // char sendBuf[] = "server-return\n";
-  // conn->send(sendBuf, strlen(sendBuf));
-
-  // std::vector<char> vSendBuf(sendBuf, sendBuf + len);
-  // conn->send(vSendBuf);
-  // Socket s(5);
-  // s.socketSend(buf, len);
 }
 
 int main(int argc, char const *argv[]) {

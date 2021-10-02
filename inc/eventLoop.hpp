@@ -39,10 +39,7 @@ EventLoop::EventLoop(int maxEventNum) : maxEventNum_(maxEventNum) {
   }
 }
 
-// EventLoop::~EventLoop() {}
-
 void EventLoop::loop() {
-  // struct epoll_event ev, events[maxEventNum_];
   spdlog::debug("EventLoop loop");
 
   for (;;) {
@@ -56,19 +53,12 @@ void EventLoop::loop() {
       if (tmpEvents_[i].events & EPOLLIN) {
         spdlog::debug("fd {} readable", sockfd);
         channelMap_[sockfd]->readCallback();
-        spdlog::debug("fd {} readCallback finished", sockfd);
-
-        // struct epoll_event ev;
-        // ev.data.fd = sockfd;
-        // ev.events = EPOLLOUT | EPOLLET;
-        // epoll_ctl(epollfd_, EPOLL_CTL_MOD, sockfd, &ev);
+        // spdlog::debug("fd {} readCallback finished", sockfd);
       }
       if (tmpEvents_[i].events & EPOLLOUT) {
         spdlog::debug("fd {} writeable", sockfd);
         channelMap_[sockfd]->writeCallback();
       }
-      // tmpEvents_[i].events
-
       // channelMap_[sockfd] = std::make_shared<Channel>();
     }
   }
@@ -101,12 +91,6 @@ ChannelPtr EventLoop::addChannel(int fd, EventCallback cb, int mask) {
     error_quit("Error adding new event to epoll..");
   }
   return channelMap_[fd];
-  //  else {
-  //   if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ev) == -1) {
-  //     printf("errno: %d\n", errno);
-  //     error_quit("Error mod epoll event..");
-  //   }
-  // }
 }
 
 #endif  // !__LOMOT_REACTOR_EVENTLOOP__
