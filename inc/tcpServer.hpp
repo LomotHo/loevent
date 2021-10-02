@@ -38,10 +38,8 @@ class TcpServer {
         [this, listenfd]() {
           spdlog::debug("[accept] listenfd: {}", listenfd);
           int sockfd = accepter_->doAccept();
-
           auto conn = newConnection(sockfd);
         },
-
         0);
   }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
@@ -50,7 +48,6 @@ class TcpServer {
     connectionCallback_ = cb;
   }
 
-  // void newConnection(int sockfd, Channel &c) {
   TcpConnectionPtr newConnection(int sockfd) {
     spdlog::debug("newConnection fd: {}", sockfd);
     char buf[64];
@@ -81,4 +78,3 @@ class TcpServer {
   }
   void start(int a) {}
 };
-void doAccept() {}
