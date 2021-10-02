@@ -12,10 +12,10 @@ void onConnection(const TcpConnectionPtr &conn) {
 void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
   spdlog::info("[onMessage] recv len: {}", len);
   printhexDump(buf, len);
-  // conn->send(buf, len);
+  conn->send(buf, len);
 
-  char sendBuf[] = "server-return\n";
-  conn->send(sendBuf, strlen(sendBuf));
+  // char sendBuf[] = "server-return\n";
+  // conn->send(sendBuf, strlen(sendBuf));
 
   // std::vector<char> vSendBuf(sendBuf, sendBuf + len);
   // conn->send(vSendBuf);
@@ -24,10 +24,15 @@ void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
 }
 
 int main(int argc, char const *argv[]) {
-  spdlog::set_level(spdlog::level::debug);
+  // spdlog::set_level(spdlog::level::debug);
+  if (argc < 2) {
+    error_quit("Please give a port number: ./server [port]");
+  }
+  int port = strtol(argv[1], NULL, 10);
+
   EventLoop eventLoop(2048);
-  spdlog::info("running");
-  TcpServer tcpServer(eventLoop, 3005, "s233", 4094);
+  spdlog::info("server running...");
+  TcpServer tcpServer(eventLoop, port, "s233", 4094);
   tcpServer.setConnectionCallback(onConnection);
   tcpServer.setMessageCallback(onMessage);
   eventLoop.loop();
