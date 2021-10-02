@@ -1,25 +1,26 @@
 #ifndef __LOMOT_REACTOR_UTILS__
 #define __LOMOT_REACTOR_UTILS__
 
-#include "spdlog/spdlog.h"
 #include <sys/socket.h>
 
 #include <iostream>
 #include <memory>
 #include <string>
 
+#include "spdlog/spdlog.h"
+
 class noncopyable {
-public:
+ public:
   noncopyable(const noncopyable &) = delete;
   void operator=(const noncopyable &) = delete;
 
-protected:
+ protected:
   noncopyable() = default;
   ~noncopyable() = default;
 };
 
 class Socket : noncopyable {
-public:
+ public:
   Socket(int fd) : sockfd(fd) {}
   // ~Socket() {}
   int sockfd;
@@ -32,8 +33,12 @@ public:
 
     send(sockfd, str, msg.size() + 1, 0);
   }
+  void socketSend(char *buf, int len) {
+    spdlog::debug("socketSend2 {} | fd: {}", buf, sockfd);
+    send(sockfd, buf, len, 0);
+  }
 
-private:
+ private:
   int state_;
 };
 
@@ -42,4 +47,4 @@ void error_quit(std::string msg) {
   exit(1);
 }
 
-#endif // !__LOMOT_REACTOR_UTILS__
+#endif  // !__LOMOT_REACTOR_UTILS__

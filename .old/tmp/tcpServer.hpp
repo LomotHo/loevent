@@ -8,26 +8,26 @@
 #include "tcpConnection.hpp"
 #include "utils.hpp"
 
+typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 typedef std::function<void(const TcpConnectionPtr, char *, int)>
     MessageCallback;
-// typedef std::function<void(char *, int)> MessageCallback;
 typedef std::function<void(const TcpConnectionPtr)> ConnectionCallback;
 typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;
 
 class TcpServer {
- private:
+private:
   /* data */
   MessageCallback messageCallback_;
-  // ConnectionCallback connectionCallback_;
+  ConnectionCallback connectionCallback_;
   struct sockaddr_in servaddr_;
-  // ConnectionMap tcpConnections_;
+  ConnectionMap tcpConnections_;
   int nextConnId_;
   std::string name_;
   int listenfd_;
   int maxMessageLen_;
   EventLoop &loop_;
 
- public:
+public:
   ~TcpServer() {}
   TcpServer(EventLoop &loop, int port, std::string name, int maxMessageLen)
       : name_(name), loop_(loop), maxMessageLen_(maxMessageLen) {
@@ -58,55 +58,38 @@ class TcpServer {
           if (sock_conn_fd == -1) {
             error_quit("Error accepting new connection..");
           }
-          // auto conn =
-          newConnection(sock_conn_fd);
-
-          // conn->setReadCallback([this, sock_conn_fd, conn]() {
-          //   int n;
-          //   char recvBuf[maxMessageLen_];
-          //   if ((n = recv(sock_conn_fd, recvBuf, maxMessageLen_, 0)) <= 0) {
-          //     // epoll_ctl(epollfd_, EPOLL_CTL_DEL, sockfd, NULL);
-          //     // shutdown(sockfd, SHUT_RDWR);
-          //     spdlog::debug("error recv data");
-          //   }
-          //   // messageCallback_(conn, recvBuf, sizeof(recvBuf));
-          // });
+          auto conn =
+              newConnection(sock_conn_fd, loop_.addChannel(
+                                              sock_conn_fd, []() {}, 0));
+          conn->setReadCallback([this, sock_conn_fd, conn]() {
+            int n;
+            char recvBuf[maxMessageLen_];
+            if ((n = recv(sock_conn_fd, recvBuf, maxMessageLen_, 0)) <= 0) {
+              // epoll_ctl(epollfd_, EPOLL_CTL_DEL, sockfd, NULL);
+              // shutdown(sockfd, SHUT_RDWR);
+              spdlog::debug("error recv data");
+            }
+            messageCallback_(conn, recvBuf, sizeof(recvBuf));
+          });
         },
 
         0);
   }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
+  void setConnectionCallback(const ConnectionCallback &cb) {
+    connectionCallback_ = cb;
+  }
 
-  // void setConnectionCallback(const ConnectionCallback &cb) {
-  //   connectionCallback_ = cb;
-  // }
-
-  // void newConnection(int sockfd, Channel &c) {
-  void newConnection(int sockfd) {
+  TcpConnectionPtr newConnection(int sockfd, Channel &c) {
     spdlog::debug("newConnection fd: {}", sockfd);
     char buf[64];
     snprintf(buf, sizeof buf, "-%d", nextConnId_);
     nextConnId_++;
     std::string connName = name_ + buf;
-
-    auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd);
-    loop_.addChannel(
-        sockfd,
-        [this, conn, sockfd]() {
-          int n;
-          char recvBuf[maxMessageLen_];
-          if ((n = recv(sockfd, recvBuf, maxMessageLen_, 0)) <= 0) {
-            // epoll_ctl(epollfd_, EPOLL_CTL_DEL, sockfd, NULL);
-            // shutdown(sockfd, SHUT_RDWR);
-            spdlog::debug("error recv data");
-          }
-          messageCallback_(conn, recvBuf, sizeof(recvBuf));
-        },
-        0);
-    // TcpConnectionPtr conn(new TcpConnection(loop_, connName, sockfd));
-    // tcpConnections_[connName] = conn;
-    // connectionCallback_(conn);
-    // return conn;
+    TcpConnectionPtr conn(new TcpConnection(loop_, connName, sockfd, c));
+    tcpConnections_[connName] = conn;
+    connectionCallback_(conn);
+    return conn;
   }
   void start(int a) {}
 };

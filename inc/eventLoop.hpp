@@ -2,10 +2,11 @@
 #define __LOMOT_REACTOR_EVENTLOOP__
 
 #include <errno.h>
-#include <map>
 #include <stdlib.h>
-#include <string>
 #include <sys/epoll.h>
+
+#include <map>
+#include <string>
 
 #include "channel.hpp"
 #include "utils.hpp"
@@ -16,18 +17,18 @@ typedef std::shared_ptr<Channel> ChannelPtr;
 typedef std::map<int, ChannelPtr> ChannelMap;
 
 class EventLoop {
-private:
+ private:
   int maxEventNum_;
   // SocketList socketList_;
   ChannelMap channelMap_;
   int epollfd_;
   struct epoll_event *tmpEvents_;
 
-public:
+ public:
   EventLoop(int maxEventNum);
   ~EventLoop() { delete tmpEvents_; };
   void loop();
-  Channel &addChannel(int fd, EventCallback cb, int mask);
+  ChannelPtr addChannel(int fd, EventCallback cb, int mask);
   // void addEvent();
 };
 
@@ -53,10 +54,17 @@ void EventLoop::loop() {
     for (int i = 0; i < newEventNum; ++i) {
       int sockfd = tmpEvents_[i].data.fd;
       if (tmpEvents_[i].events & EPOLLIN) {
-        // auto cb =
+        spdlog::debug("fd {} readable", sockfd);
         channelMap_[sockfd]->readCallback();
+        spdlog::debug("fd {} readCallback finished", sockfd);
+
+        // struct epoll_event ev;
+        // ev.data.fd = sockfd;
+        // ev.events = EPOLLOUT | EPOLLET;
+        // epoll_ctl(epollfd_, EPOLL_CTL_MOD, sockfd, &ev);
       }
       if (tmpEvents_[i].events & EPOLLOUT) {
+        spdlog::debug("fd {} writeable", sockfd);
         channelMap_[sockfd]->writeCallback();
       }
       // tmpEvents_[i].events
@@ -66,7 +74,7 @@ void EventLoop::loop() {
   }
 }
 
-Channel &EventLoop::addChannel(int fd, EventCallback cb, int mask) {
+ChannelPtr EventLoop::addChannel(int fd, EventCallback cb, int mask) {
   spdlog::debug("addChannel fd: {}", fd);
 
   // 是否已存在channel
@@ -92,7 +100,7 @@ Channel &EventLoop::addChannel(int fd, EventCallback cb, int mask) {
     printf("errno: %d\n", errno);
     error_quit("Error adding new event to epoll..");
   }
-  return *channelMap_[fd];
+  return channelMap_[fd];
   //  else {
   //   if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ev) == -1) {
   //     printf("errno: %d\n", errno);
@@ -101,4 +109,4 @@ Channel &EventLoop::addChannel(int fd, EventCallback cb, int mask) {
   // }
 }
 
-#endif // !__LOMOT_REACTOR_EVENTLOOP__
+#endif  // !__LOMOT_REACTOR_EVENTLOOP__
