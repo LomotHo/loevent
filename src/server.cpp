@@ -8,8 +8,10 @@ void onConnection(const TcpConnectionPtr &conn) {
 }
 
 void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
-  spdlog::info("[onMessage] recv len: {}", len);
-  printhexDump(buf, len);
+  // spdlog::info("[onMessage] recv len: {}", len);
+  // printhexDump(buf, len);
+  // std::string str("hello");
+  // conn->send(str);
   conn->send(buf, len);
 }
 
@@ -22,7 +24,7 @@ int main(int argc, char const *argv[]) {
 
   EventLoop eventLoop(2048);
   spdlog::info("server running...");
-  TcpServer tcpServer(eventLoop, port, "s233", 4094);
+  TcpServer tcpServer(eventLoop, port, "s233", 4096);
   tcpServer.setConnectionCallback(onConnection);
   tcpServer.setMessageCallback(onMessage);
   eventLoop.loop();

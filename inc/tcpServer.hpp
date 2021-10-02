@@ -21,20 +21,19 @@ class TcpServer {
  private:
   MessageCallback messageCallback_;
   ConnectionCallback connectionCallback_;
-
   ConnectionMap tcpConnections_;
-  int nextConnId_;
-  std::string name_;
-  int maxMessageLen_;
   EventLoop &loop_;
   Accepter *accepter_;
+  int maxMessageLen_;
+  int nextConnId_;
+  std::string name_;
 
  public:
   ~TcpServer() { delete accepter_; }
   TcpServer(EventLoop &loop, int port, std::string name, int maxMessageLen)
       : name_(name), loop_(loop), maxMessageLen_(maxMessageLen) {
     accepter_ = new Accepter(port);
-    int listenfd = accepter_->getListenFd();
+    int listenfd = accepter_->getFd();
     loop_.addChannel(
         listenfd,
         [this, listenfd]() {

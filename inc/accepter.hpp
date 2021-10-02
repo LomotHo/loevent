@@ -30,7 +30,7 @@ class Accepter {
       error_quit("error on listen");
     }
   }
-  int getListenFd() { return listenfd_; }
+  int getFd() { return listenfd_; }
   int doAccept() {
     struct sockaddr_in cliaddr;
     socklen_t clilen = sizeof(cliaddr);

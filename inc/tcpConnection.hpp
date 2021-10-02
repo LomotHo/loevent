@@ -13,17 +13,11 @@ class TcpConnection : noncopyable,
   TcpConnection(EventLoop &loop, std::string connName, int sockfd)
       : socket_(sockfd), connName_(connName), loop_(loop) {}
 
-  void send(void *msg, int len) {
-    socket_.socketSend(msg, len);
-    // std::vector<char> buf(message, message + len);
-    // spdlog::debug("setWriteCallback");
-    // channel_.setWriteCallback([this, buf]() { s.socketSend(buf); });
-    // loop_.addChannel(
-    //     s.sockfd, [this, buf]() { s.socketSend(buf); }, 1);
-  }
-  void send(std::vector<char> msg) {
-    socket_.socketSend(msg.data(), msg.size());
-  }
+  void send(std::string msg) { socket_.socketSend(msg.c_str(), msg.length()); }
+  void send(void *msg, int len) { socket_.socketSend(msg, len); }
+  // void send(std::vector<char> msg) {
+  //   socket_.socketSend(msg.data(), msg.size());
+  // }
   int getFd() { return socket_.getFd(); }
   std::string getName() { return connName_; }
 
