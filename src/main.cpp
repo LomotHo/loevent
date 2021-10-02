@@ -15,8 +15,11 @@ void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
   spdlog::info("onMessage recv: {}", buf);
   // spdlog::info("onMessage");
 
-  char sendBuf[20] = "server-return\n";
-  conn->send(sendBuf, strlen(sendBuf));
+  char sendBuf[] = "server-return\n";
+  // conn->send(sendBuf, strlen(sendBuf));
+  std::vector<char> vSendBuf(sendBuf, sendBuf + len);
+  conn->send(vSendBuf);
+
   // conn->send(buf, len);
   // Socket s(5);
   // s.socketSend(buf, len);
