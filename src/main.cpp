@@ -10,7 +10,8 @@ void onConnection(const TcpConnectionPtr &conn) {
 }
 
 void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
-  spdlog::info("[onMessage] recv: {} | len: {}", buf, len);
+  spdlog::info("[onMessage] recv len: {}", len);
+  printhexDump(buf, len);
   // conn->send(buf, len);
 
   char sendBuf[] = "server-return\n";

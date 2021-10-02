@@ -67,7 +67,8 @@ class TcpServer {
             // shutdown(sockfd, SHUT_RDWR);
             spdlog::debug("error recv data");
           }
-          messageCallback_(conn, recvBuf, sizeof(recvBuf));
+          messageCallback_(conn, recvBuf, n);
+          // spdlog::info("[recvBuf] recv n: {}", n);
         },
         0);
     tcpConnections_[connName] = conn;

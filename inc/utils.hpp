@@ -25,4 +25,31 @@ void error_quit(std::string msg) {
   exit(1);
 }
 
+void printhexDump(const char *buffer, size_t len) {
+  if (buffer == NULL || len <= 0) {
+    return;
+  }
+  printf("0x%p: [", buffer);
+  for (size_t i = 0; i < len; i++) {
+    printf("%.2X ", (unsigned char)buffer[i]);
+  }
+  printf("]\n");
+
+  printf("data str: ");
+  for (size_t i = 0; i < len; i++) {
+    printf("%c", buffer[i]);
+  }
+}
+
+void printBuf(const char *buffer, size_t len) {
+  if (buffer == NULL || len <= 0) {
+    return;
+  }
+
+  printf("data str: ");
+  for (size_t i = 0; i < len; i++) {
+    printf("%c", buffer[i]);
+  }
+  // printf("]\n");
+}
 #endif  // !__LOMOT_REACTOR_UTILS__
