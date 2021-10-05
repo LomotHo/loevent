@@ -2,4 +2,4 @@
 cd build
 cmake ..
 make
-./server 3005
+./pp_server 3005

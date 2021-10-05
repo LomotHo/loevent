@@ -65,12 +65,18 @@ class TcpServer {
           int n = recv(sockfd, recvBuf, maxMessageLen_, 0);
           if (n > 0) {
             messageCallback_(conn, recvBuf, n);
+
             // spdlog::info("[recvBuf] recv n: {}", n);
           } else if (n == 0) {
-            spdlog::info("connection closed");
+            if (errno != 0) {
+              spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno),
+                            sockfd);
+            }
+            spdlog::info("connection closed, sockfd: {}", sockfd);
             loop_.closeChannel(sockfd);
           } else if (n == -1) {
-            spdlog::error("{}: {}", errno, strerror(errno));
+            spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno),
+                          sockfd);
             if (errno != EAGAIN && errno != EINTR) {
               loop_.closeChannel(sockfd);
             }

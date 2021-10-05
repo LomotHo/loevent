@@ -1,7 +1,11 @@
 #include "eventLoop.hpp"
 #include "spdlog/spdlog.h"
-#include "tcpClient.hpp"
+#include "tcpServer.hpp"
 #include "utils.hpp"
+
+void onConnection(const TcpConnectionPtr &conn) {
+  spdlog::info("[onConnection] fd: {}", conn->getFd());
+}
 
 void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
   // spdlog::info("[onMessage] recv len: {}", len);
@@ -13,18 +17,16 @@ void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
 
 int main(int argc, char const *argv[]) {
   // spdlog::set_level(spdlog::level::debug);
-  if (argc < 3) {
-    error_quit("Please give a port number: ./client [ip] [port]");
+  if (argc < 2) {
+    error_quit("Example: ./server [port]");
   }
-  const char *ip = argv[1];
-  int port = strtol(argv[2], NULL, 10);
+  int port = strtol(argv[1], NULL, 10);
 
   EventLoop eventLoop(2048);
-  spdlog::info("client running...");
-  TcpClient tcpClient(eventLoop, ip, port, 4096);
-  tcpClient.setMessageCallback(onMessage);
-
-  tcpClient.send("hello world\n");
+  spdlog::info("server running...");
+  TcpServer tcpServer(eventLoop, port, "s233", 4096);
+  tcpServer.setConnectionCallback(onConnection);
+  tcpServer.setMessageCallback(onMessage);
   eventLoop.loop();
   return 0;
 }

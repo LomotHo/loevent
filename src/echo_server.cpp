@@ -18,13 +18,13 @@ void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
 int main(int argc, char const *argv[]) {
   // spdlog::set_level(spdlog::level::debug);
   if (argc < 2) {
-    error_quit("Please give a port number: ./server [port]");
+    error_quit("Example: ./server [port]");
   }
   int port = strtol(argv[1], NULL, 10);
 
   EventLoop eventLoop(2048);
   spdlog::info("server running...");
-  TcpServer tcpServer(eventLoop, port, "s233", 4096);
+  TcpServer tcpServer(eventLoop, port, "s233", 40960);
   tcpServer.setConnectionCallback(onConnection);
   tcpServer.setMessageCallback(onMessage);
   eventLoop.loop();

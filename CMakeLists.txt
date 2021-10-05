@@ -13,14 +13,17 @@ find_package(spdlog REQUIRED)
 
 # aux_source_directory(src/core/ core)
 
-add_executable(client src/client.cpp)
-target_link_libraries(client spdlog::spdlog pthread rt)
+add_executable(pp_client src/pingpong/client.cpp)
+target_link_libraries(pp_client spdlog::spdlog)
 
-add_executable(server src/server.cpp)
-target_link_libraries(server spdlog::spdlog)
+add_executable(pp_server src/pingpong/server.cpp)
+target_link_libraries(pp_server spdlog::spdlog)
 
-add_executable(client-c src/client-c.cpp)
-target_link_libraries(client-c)
+add_executable(benchmark_client src/benchmark/client.cpp)
+target_link_libraries(benchmark_client spdlog::spdlog)
+
+add_executable(cmd_client src/cmd_client.cpp)
+target_link_libraries(cmd_client)
 
 # add_executable(cb src/cb.cpp)
 # target_link_libraries(cb spdlog::spdlog pthread rt)
