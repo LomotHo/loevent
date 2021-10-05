@@ -28,7 +28,8 @@ class EventLoop {
   EventLoop(int maxEventNum);
   ~EventLoop() { delete tmpEvents_; };
   void loop();
-  ChannelPtr addChannel(int fd, EventCallback cb, int mask);
+  ChannelPtr createChannel(int fd, EventCallback cb, int mask);
+  void closeChannel(int fd);
   // void addEvent();
 };
 
@@ -64,8 +65,14 @@ void EventLoop::loop() {
   }
 }
 
-ChannelPtr EventLoop::addChannel(int fd, EventCallback cb, int mask) {
-  spdlog::debug("addChannel fd: {}", fd);
+void EventLoop::closeChannel(int fd) {
+  epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
+  shutdown(fd, SHUT_RDWR);
+  channelMap_.erase(fd);
+};
+
+ChannelPtr EventLoop::createChannel(int fd, EventCallback cb, int mask) {
+  spdlog::debug("createChannel fd: {}", fd);
 
   // 是否已存在channel
   if (channelMap_.find(fd) == channelMap_.end()) {
@@ -75,12 +82,12 @@ ChannelPtr EventLoop::addChannel(int fd, EventCallback cb, int mask) {
   struct epoll_event ev;
   if (mask == 0) {
     ev.events = EPOLLIN | EPOLLET;
-    spdlog::debug("addChannel setReadCallback fd: {}", fd);
+    spdlog::debug("createChannel setReadCallback fd: {}", fd);
 
     channelMap_[fd]->setReadCallback(cb);
   } else if (mask == 1) {
     ev.events = EPOLLOUT | EPOLLET;
-    spdlog::debug("addChannel setWriteCallback fd: {}", fd);
+    spdlog::debug("createChannel setWriteCallback fd: {}", fd);
     channelMap_[fd]->setWriteCallback(cb);
   }
   ev.data.fd = fd;

@@ -34,7 +34,7 @@ class TcpServer {
       : name_(name), loop_(loop), maxMessageLen_(maxMessageLen) {
     accepter_ = new Accepter(port);
     int listenfd = accepter_->getFd();
-    loop_.addChannel(
+    loop_.createChannel(
         listenfd,
         [this, listenfd]() {
           spdlog::debug("[accept] listenfd: {}", listenfd);
@@ -58,18 +58,26 @@ class TcpServer {
 
     auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd);
 
-    loop_.addChannel(
+    loop_.createChannel(
         sockfd,
         [this, conn, sockfd]() {
-          int n;
           char recvBuf[maxMessageLen_];
-          if ((n = recv(sockfd, recvBuf, maxMessageLen_, 0)) <= 0) {
-            // epoll_ctl(epollfd_, EPOLL_CTL_DEL, sockfd, NULL);
-            // shutdown(sockfd, SHUT_RDWR);
-            spdlog::debug("error recv data");
+          int n = recv(sockfd, recvBuf, maxMessageLen_, 0);
+          if (n > 0) {
+            messageCallback_(conn, recvBuf, n);
+            // spdlog::info("[recvBuf] recv n: {}", n);
+          } else if (n == 0) {
+            spdlog::info("connection closed");
+            loop_.closeChannel(sockfd);
+          } else if (n == -1) {
+            spdlog::error("{}: {}", errno, strerror(errno));
+            if (errno != EAGAIN && errno != EINTR) {
+              loop_.closeChannel(sockfd);
+            }
+          } else {
+            spdlog::error("unknow error: func recv return {}", n);
+            loop_.closeChannel(sockfd);
           }
-          messageCallback_(conn, recvBuf, n);
-          // spdlog::info("[recvBuf] recv n: {}", n);
         },
         0);
     tcpConnections_[connName] = conn;
@@ -78,6 +86,6 @@ class TcpServer {
     }
     return conn;
   }
-  void start(int a) {}
+  // void start(int a) {}
 };
 #endif  // !__LOMOT_REACTOR_TCP_SERVER__

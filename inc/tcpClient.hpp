@@ -23,17 +23,26 @@ class TcpClient {
 
     conn_ = std::make_shared<TcpConnection>(loop_, connName, sockfd_);
 
-    loop_.addChannel(
+    loop_.createChannel(
         sockfd_,
         [this]() {
-          int n;
           char recvBuf[maxMessageLen_];
-          if ((n = recv(sockfd_, recvBuf, maxMessageLen_, 0)) <= 0) {
-            // epoll_ctl(epollfd_, EPOLL_CTL_DEL, sockfd, NULL);
-            // shutdown(sockfd, SHUT_RDWR);
-            spdlog::debug("error recv data");
+          int n = recv(sockfd_, recvBuf, maxMessageLen_, 0);
+          if (n > 0) {
+            messageCallback_(conn_, recvBuf, n);
+            // spdlog::info("[recvBuf] recv n: {}", n);
+          } else if (n == 0) {
+            spdlog::info("connection closed");
+            loop_.closeChannel(sockfd_);
+          } else if (n == -1) {
+            spdlog::error("{}: {}", errno, strerror(errno));
+            if (errno != EAGAIN && errno != EINTR) {
+              loop_.closeChannel(sockfd_);
+            }
+          } else {
+            spdlog::error("unknow error: func recv return {}", n);
+            loop_.closeChannel(sockfd_);
           }
-          messageCallback_(conn_, recvBuf, n);
         },
         0);
   }
