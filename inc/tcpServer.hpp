@@ -39,6 +39,7 @@ class TcpServer {
         [this, listenfd]() {
           spdlog::debug("[accept] listenfd: {}", listenfd);
           int sockfd = accepter_->doAccept();
+          spdlog::info("[accept] sockfd: {}", sockfd);
           auto conn = newConnection(sockfd);
         },
         0);

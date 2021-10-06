@@ -35,7 +35,9 @@ class Accepter {
     struct sockaddr_in cliaddr;
     socklen_t clilen = sizeof(cliaddr);
     int sockfd =
-        accept4(listenfd_, (struct sockaddr *)&cliaddr, &clilen, SOCK_NONBLOCK);
+        // accept4(listenfd_, (struct sockaddr *)&cliaddr, &clilen,
+        // SOCK_NONBLOCK);
+        accept(listenfd_, (struct sockaddr *)&cliaddr, &clilen);
     if (sockfd == -1) {
       error_quit("Error accepting new connection..");
       return -1;

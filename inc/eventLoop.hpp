@@ -82,11 +82,13 @@ ChannelPtr EventLoop::createChannel(int fd, EventCallback cb, int mask) {
   struct epoll_event ev;
   if (mask == 0) {
     ev.events = EPOLLIN | EPOLLET;
+    // ev.events = EPOLLIN;
     spdlog::debug("createChannel setReadCallback fd: {}", fd);
 
     channelMap_[fd]->setReadCallback(cb);
   } else if (mask == 1) {
     ev.events = EPOLLOUT | EPOLLET;
+    // ev.events = EPOLLOUT;
     spdlog::debug("createChannel setWriteCallback fd: {}", fd);
     channelMap_[fd]->setWriteCallback(cb);
   }
