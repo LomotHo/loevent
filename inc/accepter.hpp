@@ -7,6 +7,8 @@
 
 #include "utils.hpp"
 
+namespace loevent {
+
 class Accepter {
  public:
   ~Accepter() {}
@@ -50,4 +52,5 @@ class Accepter {
   struct sockaddr_in servaddr_;
 };
 
+}  // namespace loevent
 #endif  // !__LOMOT_REACTOR_ACCEPTER__

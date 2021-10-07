@@ -1,7 +1,9 @@
-#include "eventLoop.hpp"
+#include "event_loop.hpp"
 #include "spdlog/spdlog.h"
-#include "tcpClient.hpp"
+#include "tcp_client.hpp"
 #include "utils.hpp"
+
+using namespace loevent;
 
 void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
   // spdlog::info("[onMessage] recv len: {}", len);

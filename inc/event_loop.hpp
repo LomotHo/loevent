@@ -11,7 +11,9 @@
 #include "channel.hpp"
 #include "utils.hpp"
 
-#define MAX_EVENTS 1024
+// #define MAX_EVENTS 1024
+
+namespace loevent {
 
 typedef std::shared_ptr<Channel> ChannelPtr;
 typedef std::map<int, ChannelPtr> ChannelMap;
@@ -101,5 +103,7 @@ ChannelPtr EventLoop::createChannel(int fd, EventCallback cb, int mask) {
   }
   return channelMap_[fd];
 }
+
+}  // namespace loevent
 
 #endif  // !__LOMOT_REACTOR_EVENTLOOP__

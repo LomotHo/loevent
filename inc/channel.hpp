@@ -5,6 +5,8 @@
 
 #include "spdlog/spdlog.h"
 
+namespace loevent {
+
 // typedef std::function<void(void)> ReadEventCallback;
 typedef std::function<void(void)> EventCallback;
 class Channel {
@@ -20,4 +22,5 @@ class Channel {
  private:
 };
 
+}  // namespace loevent
 #endif  // !__LOMOT_REACTOR_CHANNEL__

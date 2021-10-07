@@ -8,6 +8,8 @@
 
 #include "utils.hpp"
 
+namespace loevent {
+
 class Connector {
  public:
   ~Connector() {}
@@ -37,4 +39,5 @@ class Connector {
   int sockfd_;
 };
 
+}  // namespace loevent
 #endif  // !__LOMOT_REACTOR_CONNECTOR__

@@ -1,7 +1,9 @@
-#include "eventLoop.hpp"
+#include "event_loop.hpp"
 #include "spdlog/spdlog.h"
-#include "tcpServer.hpp"
+#include "tcp_server.hpp"
 #include "utils.hpp"
+
+using namespace loevent;
 
 void onConnection(const TcpConnectionPtr &conn) {
   spdlog::info("[onConnection] fd: {}", conn->getFd());

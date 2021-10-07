@@ -4,6 +4,8 @@
 #include "spdlog/spdlog.h"
 #include "utils.hpp"
 
+namespace loevent {
+
 class Socket : noncopyable {
  public:
   Socket(int fd) : sockfd_(fd) {}
@@ -20,4 +22,5 @@ class Socket : noncopyable {
   int state_;
 };
 
+}  // namespace loevent
 #endif  // !__LOMOT_REACTOR_SOCKET__

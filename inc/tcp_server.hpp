@@ -8,9 +8,11 @@
 #include <string>
 
 #include "accepter.hpp"
-#include "eventLoop.hpp"
-#include "tcpConnection.hpp"
+#include "event_loop.hpp"
+#include "tcp_connection.hpp"
 #include "utils.hpp"
+
+namespace loevent {
 
 typedef std::function<void(const TcpConnectionPtr, char *, int)> MessageCallback;
 typedef std::function<void(const TcpConnectionPtr)> ConnectionCallback;
@@ -90,4 +92,6 @@ class TcpServer {
   }
   // void start(int a) {}
 };
+
+}  // namespace loevent
 #endif  // !__LOMOT_REACTOR_TCP_SERVER__

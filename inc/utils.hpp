@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+namespace loevent {
+
 class noncopyable {
  public:
   noncopyable(const noncopyable &) = delete;
@@ -52,4 +54,6 @@ void printBuf(const char *buffer, size_t len) {
   }
   // printf("]\n");
 }
+
+}  // namespace loevent
 #endif  // !__LOMOT_REACTOR_UTILS__

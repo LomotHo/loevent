@@ -2,9 +2,11 @@
 #define __LOMOT_REACTOR_TCP_CLIENT__
 
 #include "connector.hpp"
-#include "eventLoop.hpp"
-#include "tcpConnection.hpp"
+#include "event_loop.hpp"
+#include "tcp_connection.hpp"
 #include "utils.hpp"
+
+namespace loevent {
 
 typedef std::function<void(const TcpConnectionPtr, char *, int)> MessageCallback;
 
@@ -58,4 +60,5 @@ class TcpClient {
   int maxMessageLen_;
 };
 
+}  // namespace loevent
 #endif  // !__LOMOT_REACTOR_TCP_CLIENT__

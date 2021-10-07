@@ -4,8 +4,10 @@
 #include <string>
 #include <vector>
 
-#include "eventLoop.hpp"
+#include "event_loop.hpp"
 #include "socket.hpp"
+
+namespace loevent {
 
 class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnection> {
  public:
@@ -29,4 +31,5 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
 
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 
+}  // namespace loevent
 #endif  // !__LOMOT_REACTOR_TCP_CONNECTION__
