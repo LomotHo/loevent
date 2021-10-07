@@ -7,8 +7,7 @@
 #include "eventLoop.hpp"
 #include "socket.hpp"
 
-class TcpConnection : noncopyable,
-                      public std::enable_shared_from_this<TcpConnection> {
+class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnection> {
  public:
   TcpConnection(EventLoop &loop, std::string connName, int sockfd)
       : socket_(sockfd), connName_(connName), loop_(loop) {}

@@ -12,8 +12,7 @@
 #include "tcpConnection.hpp"
 #include "utils.hpp"
 
-typedef std::function<void(const TcpConnectionPtr, char *, int)>
-    MessageCallback;
+typedef std::function<void(const TcpConnectionPtr, char *, int)> MessageCallback;
 typedef std::function<void(const TcpConnectionPtr)> ConnectionCallback;
 typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;
 
@@ -46,9 +45,7 @@ class TcpServer {
   }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
 
-  void setConnectionCallback(const ConnectionCallback &cb) {
-    connectionCallback_ = cb;
-  }
+  void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }
 
   TcpConnectionPtr newConnection(int sockfd) {
     spdlog::debug("newConnection fd: {}", sockfd);
@@ -70,14 +67,12 @@ class TcpServer {
             // spdlog::info("[recvBuf] recv n: {}", n);
           } else if (n == 0) {
             if (errno != 0) {
-              spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno),
-                            sockfd);
+              spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno), sockfd);
             }
             spdlog::info("connection closed, sockfd: {}", sockfd);
             loop_.closeChannel(sockfd);
           } else if (n == -1) {
-            spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno),
-                          sockfd);
+            spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno), sockfd);
             if (errno != EAGAIN && errno != EINTR) {
               loop_.closeChannel(sockfd);
             }

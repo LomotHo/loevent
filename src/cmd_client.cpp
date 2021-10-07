@@ -3,7 +3,6 @@
 
 // #include "spdlog/spdlog.h"
 #include <arpa/inet.h>
-#include <cerrno>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +10,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <cerrno>
 
 #define MAXLINE 1024
 
@@ -42,8 +43,7 @@ ssize_t readline(int fd, void *vptr, size_t maxlen) {
   for (n = 1; n < maxlen; n++) {
     if ((rc = my_read(fd, &c)) == 1) {
       *ptr++ = c;
-      if (c == '\n')
-        break;
+      if (c == '\n') break;
     } else if (rc == 0) {
       *ptr = 0;
       return (n - 1); /* EOF, n - 1 bytes were read */

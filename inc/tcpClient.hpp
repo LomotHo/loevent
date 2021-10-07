@@ -6,8 +6,7 @@
 #include "tcpConnection.hpp"
 #include "utils.hpp"
 
-typedef std::function<void(const TcpConnectionPtr, char *, int)>
-    MessageCallback;
+typedef std::function<void(const TcpConnectionPtr, char *, int)> MessageCallback;
 
 class TcpClient {
  public:
