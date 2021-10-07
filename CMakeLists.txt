@@ -3,6 +3,7 @@ project(reactor-demo)
 
 set(CMAKE_CXX_STANDARD 11) 
 set(CMAKE_CXX_STANDARD_REQUIRED True) 
+set(CMAKE_EXPORT_COMPILECOMMANDS ON)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/inc)
 
@@ -13,14 +14,14 @@ find_package(spdlog REQUIRED)
 
 # aux_source_directory(src/core/ core)
 
-add_executable(pp_client src/pingpong/client.cpp)
+add_executable(pp_client src/pp_client.cpp)
 target_link_libraries(pp_client spdlog::spdlog)
 
-add_executable(pp_server src/pingpong/server.cpp)
-target_link_libraries(pp_server spdlog::spdlog)
+add_executable(echo_server src/echo_server.cpp)
+target_link_libraries(echo_server spdlog::spdlog)
 
-add_executable(benchmark_client src/benchmark/client.cpp)
-target_link_libraries(benchmark_client spdlog::spdlog)
+add_executable(bench_cli src/bench_cli.cpp)
+target_link_libraries(bench_cli spdlog::spdlog)
 
 add_executable(cmd_client src/cmd_client.cpp)
 target_link_libraries(cmd_client)
