@@ -14,6 +14,13 @@ find_package(spdlog REQUIRED)
 
 # aux_source_directory(src/core/ core)
 
+# SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
+# SET(LOEVENT_SRC "src/tmp.cpp")
+
+# include_directories("${PROJECT_SOURCE_DIR}/inc")
+# ADD_LIBRARY(loevent STATIC ${LOEVENT_SRC})
+
+
 add_executable(pp_client src/pp_client.cpp)
 target_link_libraries(pp_client spdlog::spdlog)
 
