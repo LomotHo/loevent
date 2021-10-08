@@ -8,19 +8,19 @@
 #include <map>
 #include <string>
 
-#include "channel.hpp"
+#include "io_event.hpp"
 #include "utils.hpp"
 
 namespace loevent {
 
-typedef std::shared_ptr<Channel> ChannelPtr;
-typedef std::map<int, ChannelPtr> ChannelMap;
+typedef std::shared_ptr<IoEvent> IoEventPtr;
+typedef std::map<int, IoEventPtr> IoEventMap;
 
 class EventLoop {
  private:
   int maxEventNum_;
   // SocketList socketList_;
-  ChannelMap channelMap_;
+  IoEventMap ioEventMap_;
   int epollfd_;
   struct epoll_event *tmpEvents_;
 
@@ -28,8 +28,8 @@ class EventLoop {
   EventLoop(int maxEventNum);
   ~EventLoop() { delete tmpEvents_; };
   void loop();
-  ChannelPtr createChannel(int fd, EventCallback cb, uint32_t mask);
-  void closeChannel(int fd);
+  IoEventPtr createIoEvent(int fd, EventCallback cb, uint32_t mask);
+  void closeIoEvent(int fd);
   // void addEvent();
 };
 
@@ -53,30 +53,30 @@ void EventLoop::loop() {
       int sockfd = tmpEvents_[i].data.fd;
       if (tmpEvents_[i].events & EPOLLIN) {
         spdlog::debug("fd {} readable", sockfd);
-        channelMap_[sockfd]->readCallback();
+        ioEventMap_[sockfd]->readCallback();
         // spdlog::debug("fd {} readCallback finished", sockfd);
       }
       if (tmpEvents_[i].events & EPOLLOUT) {
         spdlog::debug("fd {} writeable", sockfd);
-        channelMap_[sockfd]->writeCallback();
+        ioEventMap_[sockfd]->writeCallback();
       }
-      // channelMap_[sockfd] = std::make_shared<Channel>();
+      // ioEventMap_[sockfd] = std::make_shared<IoEvent>();
     }
   }
 }
 
-void EventLoop::closeChannel(int fd) {
+void EventLoop::closeIoEvent(int fd) {
   epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
   shutdown(fd, SHUT_RDWR);
-  channelMap_.erase(fd);
+  ioEventMap_.erase(fd);
 };
 
-ChannelPtr EventLoop::createChannel(int fd, EventCallback cb, uint32_t mask) {
-  spdlog::debug("createChannel fd: {}", fd);
+IoEventPtr EventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {
+  spdlog::debug("createIoEvent fd: {}", fd);
 
-  // 是否已存在channel
-  if (channelMap_.find(fd) == channelMap_.end()) {
-    channelMap_[fd] = std::make_shared<Channel>();
+  // 是否已存在ioEvent
+  if (ioEventMap_.find(fd) == ioEventMap_.end()) {
+    ioEventMap_[fd] = std::make_shared<IoEvent>();
   }
 
   struct epoll_event ev;
@@ -85,23 +85,23 @@ ChannelPtr EventLoop::createChannel(int fd, EventCallback cb, uint32_t mask) {
   if (mask & POLLIN || mask & (POLLIN | POLLET)) {
     // ev.events = EPOLLIN | EPOLLET;
     // ev.events = EPOLLIN;
-    spdlog::debug("createChannel setReadCallback fd: {}", fd);
+    spdlog::debug("createIoEvent setReadCallback fd: {}", fd);
 
-    channelMap_[fd]->setReadCallback(cb);
+    ioEventMap_[fd]->setReadCallback(cb);
   } else if (mask & POLLOUT || mask & (POLLOUT | POLLET)) {
     // ev.events = EPOLLOUT | EPOLLET;
     // ev.events = EPOLLOUT;
-    spdlog::debug("createChannel setWriteCallback fd: {}", fd);
-    channelMap_[fd]->setWriteCallback(cb);
+    spdlog::debug("createIoEvent setWriteCallback fd: {}", fd);
+    ioEventMap_[fd]->setWriteCallback(cb);
   }
   ev.data.fd = fd;
-  // if (channelMap_.find(fd) == channelMap_.end()) {
+  // if (ioEventMap_.find(fd) == ioEventMap_.end()) {
   // }
   if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &ev) == -1) {
     printf("errno: %d\n", errno);
     error_quit("Error adding new event to epoll..");
   }
-  return channelMap_[fd];
+  return ioEventMap_[fd];
 }
 
 }  // namespace loevent

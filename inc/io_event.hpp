@@ -17,10 +17,10 @@ namespace loevent {
 
 // typedef std::function<void(void)> ReadEventCallback;
 typedef std::function<void(void)> EventCallback;
-class Channel {
+class IoEvent {
  public:
-  ~Channel() {}
-  Channel() { spdlog::debug("new channel"); }
+  ~IoEvent() {}
+  IoEvent() { spdlog::debug("new ioEvent"); }
   void setReadCallback(EventCallback cb) { readCallback = std::move(cb); }
   void setWriteCallback(EventCallback cb) { writeCallback = std::move(cb); }
 

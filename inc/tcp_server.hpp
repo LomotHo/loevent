@@ -35,7 +35,7 @@ class TcpServer {
       : name_(name), loop_(loop), maxMessageLen_(maxMessageLen) {
     accepter_ = new Accepter(port);
     int listenfd = accepter_->getFd();
-    loop_.createChannel(
+    loop_.createIoEvent(
         listenfd,
         [this, listenfd]() {
           spdlog::debug("[accept] listenfd: {}", listenfd);
@@ -58,7 +58,7 @@ class TcpServer {
 
     auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd);
 
-    loop_.createChannel(
+    loop_.createIoEvent(
         sockfd,
         [this, conn, sockfd]() {
           char recvBuf[maxMessageLen_];
@@ -72,15 +72,15 @@ class TcpServer {
               spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno), sockfd);
             }
             spdlog::info("connection closed, sockfd: {}", sockfd);
-            loop_.closeChannel(sockfd);
+            loop_.closeIoEvent(sockfd);
           } else if (n == -1) {
             spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno), sockfd);
             if (errno != EAGAIN && errno != EINTR) {
-              loop_.closeChannel(sockfd);
+              loop_.closeIoEvent(sockfd);
             }
           } else {
             spdlog::error("unknow error: func recv return {}", n);
-            loop_.closeChannel(sockfd);
+            loop_.closeIoEvent(sockfd);
           }
         },
         POLLIN | POLLET);

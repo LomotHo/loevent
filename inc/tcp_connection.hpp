@@ -23,7 +23,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   std::string getName() { return connName_; }
 
  private:
-  // Channel &channel_;
+  // IoEvent &ioEvent_;
   Socket socket_;
   std::string connName_;
   EventLoop &loop_;
