@@ -11,8 +11,6 @@
 #include "channel.hpp"
 #include "utils.hpp"
 
-// #define MAX_EVENTS 1024
-
 namespace loevent {
 
 typedef std::shared_ptr<Channel> ChannelPtr;
@@ -30,7 +28,7 @@ class EventLoop {
   EventLoop(int maxEventNum);
   ~EventLoop() { delete tmpEvents_; };
   void loop();
-  ChannelPtr createChannel(int fd, EventCallback cb, int mask);
+  ChannelPtr createChannel(int fd, EventCallback cb, uint32_t mask);
   void closeChannel(int fd);
   // void addEvent();
 };
@@ -73,7 +71,7 @@ void EventLoop::closeChannel(int fd) {
   channelMap_.erase(fd);
 };
 
-ChannelPtr EventLoop::createChannel(int fd, EventCallback cb, int mask) {
+ChannelPtr EventLoop::createChannel(int fd, EventCallback cb, uint32_t mask) {
   spdlog::debug("createChannel fd: {}", fd);
 
   // 是否已存在channel
@@ -82,14 +80,16 @@ ChannelPtr EventLoop::createChannel(int fd, EventCallback cb, int mask) {
   }
 
   struct epoll_event ev;
-  if (mask == 0) {
-    ev.events = EPOLLIN | EPOLLET;
+  ev.events = mask;
+
+  if (mask & POLLIN || mask & (POLLIN | POLLET)) {
+    // ev.events = EPOLLIN | EPOLLET;
     // ev.events = EPOLLIN;
     spdlog::debug("createChannel setReadCallback fd: {}", fd);
 
     channelMap_[fd]->setReadCallback(cb);
-  } else if (mask == 1) {
-    ev.events = EPOLLOUT | EPOLLET;
+  } else if (mask & POLLOUT || mask & (POLLOUT | POLLET)) {
+    // ev.events = EPOLLOUT | EPOLLET;
     // ev.events = EPOLLOUT;
     spdlog::debug("createChannel setWriteCallback fd: {}", fd);
     channelMap_[fd]->setWriteCallback(cb);
