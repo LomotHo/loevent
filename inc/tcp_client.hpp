@@ -45,7 +45,7 @@ class TcpClient {
             loop_.closeIoEvent(sockfd_);
           }
         },
-        0);
+        POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
   }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
   void send(std::string msg) { conn_->send(msg); }

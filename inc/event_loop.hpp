@@ -82,13 +82,13 @@ IoEventPtr EventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {
   struct epoll_event ev;
   ev.events = mask;
 
-  if (mask & POLLIN || mask & (POLLIN | POLLET)) {
+  if (mask & POLLIN) {
     // ev.events = EPOLLIN | EPOLLET;
     // ev.events = EPOLLIN;
     spdlog::debug("createIoEvent setReadCallback fd: {}", fd);
 
     ioEventMap_[fd]->setReadCallback(cb);
-  } else if (mask & POLLOUT || mask & (POLLOUT | POLLET)) {
+  } else if (mask & POLLOUT) {
     // ev.events = EPOLLOUT | EPOLLET;
     // ev.events = EPOLLOUT;
     spdlog::debug("createIoEvent setWriteCallback fd: {}", fd);

@@ -1,19 +1,22 @@
 #ifndef __LOMOT_REACTOR_CHANNEL__
 #define __LOMOT_REACTOR_CHANNEL__
 
+#include <sys/epoll.h>
+
 #include <functional>
 
 #include "spdlog/spdlog.h"
 
 namespace loevent {
 
-#define POLLIN 0x001 /* There is data to read.  */
+#define POLLIN EPOLLIN /* There is data to read.  */
 // #define POLLPRI 0x002  /* There is urgent data to read.  */
-#define POLLOUT 0x004 /* Writing now will not block.  */
-#define POLLERR 0x008 /* Error condition.  */
-#define POLLHUP 0x010 /* Hung up.  */
+#define POLLOUT EPOLLOUT /* Writing now will not block.  */
+#define POLLERR EPOLLERR /* Error condition.  */
+#define POLLHUP EPOLLHUP /* Hung up.  */
+#define POLLRDHUP EPOLLRDHUP
 // #define POLLNVAL 0x020 /* Invalid polling request.  */
-#define POLLET 1u << 31
+#define POLLET EPOLLET
 
 // typedef std::function<void(void)> ReadEventCallback;
 typedef std::function<void(void)> EventCallback;

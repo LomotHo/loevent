@@ -43,7 +43,7 @@ class TcpServer {
           spdlog::info("[accept] sockfd: {}", sockfd);
           auto conn = newConnection(sockfd);
         },
-        POLLIN);
+        POLLIN | POLLRDHUP);
   }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
 
@@ -83,7 +83,7 @@ class TcpServer {
             loop_.closeIoEvent(sockfd);
           }
         },
-        POLLIN | POLLET);
+        POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
     tcpConnections_[connName] = conn;
     if (connectionCallback_) {
       connectionCallback_(conn);
