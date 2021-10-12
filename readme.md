@@ -1,3 +1,3 @@
-# reactor demo
+# loevent
 
-一个练手的c++小项目
+一个简单的 c++ Epoll 网络库
