@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
+#include <unistd.h>
 
 #include <map>
 #include <string>
@@ -68,6 +69,7 @@ void EventLoop::loop() {
 void EventLoop::closeIoEvent(int fd) {
   epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
   shutdown(fd, SHUT_RDWR);
+  close(fd);
   ioEventMap_.erase(fd);
 };
 

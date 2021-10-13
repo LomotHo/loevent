@@ -21,6 +21,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   // }
   int getFd() { return socket_.getFd(); }
   std::string getName() { return connName_; }
+  ~TcpConnection() { spdlog::debug("connection destoried, fd: {}", getFd()); }
 
  private:
   // IoEvent &ioEvent_;
