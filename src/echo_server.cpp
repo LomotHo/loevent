@@ -9,16 +9,20 @@ void onConnection(const TcpConnectionPtr &conn) {
   spdlog::info("[onConnection] fd: {}", conn->getFd());
 }
 
-void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
+void onMessage(const TcpConnectionPtr &conn) {
   // spdlog::info("[onMessage] recv len: {}", len);
   // printhexDump(buf, len);
   // std::string str("hello");
   // conn->send(str);
-  conn->send(buf, len);
+  // if (conn->getRecvBuffer()->readableBytes()) {
+  // }
+  int rb = conn->getRecvBuffer()->readableBytes();
+  conn->send(conn->getRecvBuffer()->start(), rb);
+  conn->getRecvBuffer()->retrieve(rb);
 }
 
 int main(int argc, char const *argv[]) {
-  spdlog::set_level(spdlog::level::debug);
+  // spdlog::set_level(spdlog::level::debug);
   if (argc < 2) {
     error_quit("Example: ./server [port]");
   }

@@ -8,7 +8,7 @@
 
 namespace loevent {
 
-typedef std::function<void(const TcpConnectionPtr, char *, int)> MessageCallback;
+// typedef std::function<void(const TcpConnectionPtr, char *, int)> MessageCallback;
 
 class TcpClient {
  public:
@@ -30,7 +30,11 @@ class TcpClient {
           char recvBuf[maxMessageLen_];
           int n = recv(sockfd_, recvBuf, maxMessageLen_, 0);
           if (n > 0) {
-            messageCallback_(conn_, recvBuf, n);
+            int wb = conn_->getRecvBuffer()->writableBytes();
+            if (!conn_->getRecvBuffer()->write(recvBuf, n)) {
+              spdlog::error("write buffer error, fd: {}", sockfd_);
+            }
+            messageCallback_(conn_);
             // spdlog::info("[recvBuf] recv n: {}", n);
           } else if (n == 0) {
             spdlog::info("connection closed");

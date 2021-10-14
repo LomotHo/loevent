@@ -5,12 +5,14 @@
 
 using namespace loevent;
 
-void onMessage(const TcpConnectionPtr &conn, char *buf, int len) {
+void onMessage(const TcpConnectionPtr &conn) {
   // spdlog::info("[onMessage] recv len: {}", len);
   // printhexDump(buf, len);
   // std::string str("hello");
   // conn->send(str);
-  conn->send(buf, len);
+  int rb = conn->getRecvBuffer()->readableBytes();
+  conn->send(conn->getRecvBuffer()->start(), rb);
+  conn->getRecvBuffer()->retrieve(rb);
 }
 
 int main(int argc, char const *argv[]) {

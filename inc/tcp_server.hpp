@@ -14,8 +14,6 @@
 
 namespace loevent {
 
-typedef std::function<void(const TcpConnectionPtr, char *, int)> MessageCallback;
-typedef std::function<void(const TcpConnectionPtr)> ConnectionCallback;
 typedef std::map<int, TcpConnectionPtr> ConnectionMap;
 
 class TcpServer {
@@ -52,10 +50,17 @@ class TcpServer {
     newConnection(sockfd);
   }
   void onRecvEvent(int fd, TcpConnectionPtr conn) {
-    char recvBuf[maxMessageLen_];
-    int n = recv(fd, recvBuf, maxMessageLen_, 0);
+    int wb = conn->getRecvBuffer()->writableBytes();
+    int n = recv(fd, conn->getRecvBuffer()->end(), wb, 0);
+    conn->getRecvBuffer()->manualWrite(n);
+    // char recvBuf[maxMessageLen_];
+    // int n = recv(fd, recvBuf, maxMessageLen_, 0);
     if (n > 0) {
-      messageCallback_(conn, recvBuf, n);
+      // int wb = conn->getRecvBuffer()->writableBytes();
+      // if (!conn->getRecvBuffer()->write(recvBuf, n)) {
+      //   spdlog::error("write buffer error, fd: {}", fd);
+      // }
+      messageCallback_(conn);
     } else if (n == 0) {
       if (errno != 0) {
         spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno), fd);
