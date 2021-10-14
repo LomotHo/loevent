@@ -34,7 +34,7 @@ int main(int argc, char const *argv[]) {
 
   for (int i = 0; i < sessionCount; ++i) {
     spdlog::info("client running...");
-    TcpClient *tc = new TcpClient(eventLoop, ip, port, 4096);
+    TcpClient *tc = new TcpClient(eventLoop, ip, port, blockSize);
     tc->setMessageCallback(onMessage);
     tc->send(message);
   }

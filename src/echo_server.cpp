@@ -24,9 +24,9 @@ int main(int argc, char const *argv[]) {
   }
   int port = strtol(argv[1], NULL, 10);
 
-  EventLoop eventLoop(2048);
+  EventLoop eventLoop(20480);
   spdlog::info("server running...");
-  TcpServer tcpServer(eventLoop, port, "s233", 40960);
+  TcpServer tcpServer(eventLoop, port, "s233", 4096);
   tcpServer.setConnectionCallback(onConnection);
   tcpServer.setMessageCallback(onMessage);
   eventLoop.loop();
