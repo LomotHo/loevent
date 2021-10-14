@@ -1,5 +1,5 @@
-#ifndef __LOMOT_REACTOR_TCP_SERVER__
-#define __LOMOT_REACTOR_TCP_SERVER__
+#ifndef __LOEVENT_TCP_SERVER__
+#define __LOEVENT_TCP_SERVER__
 
 #include <netinet/in.h>
 
@@ -93,4 +93,4 @@ class TcpServer {
 };
 
 }  // namespace loevent
-#endif  // !__LOMOT_REACTOR_TCP_SERVER__
+#endif  // !__LOEVENT_TCP_SERVER__

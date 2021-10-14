@@ -1,5 +1,5 @@
-#ifndef __LOMOT_REACTOR_EVENTLOOP__
-#define __LOMOT_REACTOR_EVENTLOOP__
+#ifndef __LOEVENT_EVENTLOOP__
+#define __LOEVENT_EVENTLOOP__
 
 #include <errno.h>
 #include <stdlib.h>
@@ -108,4 +108,4 @@ IoEventPtr EventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {
 
 }  // namespace loevent
 
-#endif  // !__LOMOT_REACTOR_EVENTLOOP__
+#endif  // !__LOEVENT_EVENTLOOP__

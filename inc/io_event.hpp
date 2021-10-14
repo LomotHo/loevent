@@ -1,5 +1,5 @@
-#ifndef __LOMOT_REACTOR_CHANNEL__
-#define __LOMOT_REACTOR_CHANNEL__
+#ifndef __LOEVENT_CHANNEL__
+#define __LOEVENT_CHANNEL__
 
 #include <sys/epoll.h>
 
@@ -34,4 +34,4 @@ class IoEvent {
 };
 
 }  // namespace loevent
-#endif  // !__LOMOT_REACTOR_CHANNEL__
+#endif  // !__LOEVENT_CHANNEL__

@@ -1,5 +1,5 @@
-#ifndef __LOMOT_REACTOR_SOCKET__
-#define __LOMOT_REACTOR_SOCKET__
+#ifndef __LOEVENT_SOCKET__
+#define __LOEVENT_SOCKET__
 
 #include "spdlog/spdlog.h"
 #include "utils.hpp"
@@ -23,4 +23,4 @@ class Socket : noncopyable {
 };
 
 }  // namespace loevent
-#endif  // !__LOMOT_REACTOR_SOCKET__
+#endif  // !__LOEVENT_SOCKET__

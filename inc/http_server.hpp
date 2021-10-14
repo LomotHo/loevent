@@ -1,0 +1,3 @@
+#ifndef __LOEVENT_HTTP_SERVER__
+#define __LOEVENT_HTTP_SERVER__
+#endif  // !__LOEVENT_HTTP_SERVER__

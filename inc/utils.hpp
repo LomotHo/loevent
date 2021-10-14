@@ -1,5 +1,5 @@
-#ifndef __LOMOT_REACTOR_UTILS__
-#define __LOMOT_REACTOR_UTILS__
+#ifndef __LOEVENT_UTILS__
+#define __LOEVENT_UTILS__
 
 #include <sys/socket.h>
 
@@ -56,4 +56,4 @@ void printBuf(const char *buffer, size_t len) {
 }
 
 }  // namespace loevent
-#endif  // !__LOMOT_REACTOR_UTILS__
+#endif  // !__LOEVENT_UTILS__

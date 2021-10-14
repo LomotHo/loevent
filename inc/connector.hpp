@@ -1,5 +1,5 @@
-#ifndef __LOMOT_REACTOR_CONNECTOR__
-#define __LOMOT_REACTOR_CONNECTOR__
+#ifndef __LOEVENT_CONNECTOR__
+#define __LOEVENT_CONNECTOR__
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -40,4 +40,4 @@ class Connector {
 };
 
 }  // namespace loevent
-#endif  // !__LOMOT_REACTOR_CONNECTOR__
+#endif  // !__LOEVENT_CONNECTOR__

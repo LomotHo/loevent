@@ -1,5 +1,5 @@
-#ifndef __LOMOT_REACTOR_TCP_CONNECTION__
-#define __LOMOT_REACTOR_TCP_CONNECTION__
+#ifndef __LOEVENT_TCP_CONNECTION__
+#define __LOEVENT_TCP_CONNECTION__
 
 #include <string>
 #include <vector>
@@ -33,4 +33,4 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 
 }  // namespace loevent
-#endif  // !__LOMOT_REACTOR_TCP_CONNECTION__
+#endif  // !__LOEVENT_TCP_CONNECTION__

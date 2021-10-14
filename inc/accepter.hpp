@@ -1,5 +1,5 @@
-#ifndef __LOMOT_REACTOR_ACCEPTER__
-#define __LOMOT_REACTOR_ACCEPTER__
+#ifndef __LOEVENT_ACCEPTER__
+#define __LOEVENT_ACCEPTER__
 
 #include <netinet/in.h>
 
@@ -53,4 +53,4 @@ class Accepter {
 };
 
 }  // namespace loevent
-#endif  // !__LOMOT_REACTOR_ACCEPTER__
+#endif  // !__LOEVENT_ACCEPTER__

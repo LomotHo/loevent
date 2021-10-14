@@ -1,5 +1,5 @@
-#ifndef __LOMOT_REACTOR_TCP_CLIENT__
-#define __LOMOT_REACTOR_TCP_CLIENT__
+#ifndef __LOEVENT_TCP_CLIENT__
+#define __LOEVENT_TCP_CLIENT__
 
 #include "connector.hpp"
 #include "event_loop.hpp"
@@ -61,4 +61,4 @@ class TcpClient {
 };
 
 }  // namespace loevent
-#endif  // !__LOMOT_REACTOR_TCP_CLIENT__
+#endif  // !__LOEVENT_TCP_CLIENT__
