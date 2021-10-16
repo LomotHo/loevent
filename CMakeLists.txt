@@ -27,6 +27,9 @@ target_link_libraries(pp_client spdlog::spdlog)
 add_executable(echo_server src/echo_server.cpp)
 target_link_libraries(echo_server spdlog::spdlog)
 
+add_executable(http_demo src/http_demo.cpp)
+target_link_libraries(http_demo spdlog::spdlog)
+
 add_executable(bench_cli src/bench_cli.cpp)
 target_link_libraries(bench_cli spdlog::spdlog)
 

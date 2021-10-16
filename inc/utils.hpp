@@ -27,7 +27,7 @@ void error_quit(std::string msg) {
   exit(1);
 }
 
-void printhexDump(const char *buffer, size_t len) {
+void printHexDump(const char *buffer, size_t len) {
   if (buffer == NULL || len <= 0) {
     return;
   }

@@ -12,7 +12,7 @@ class Socket : noncopyable {
   ~Socket() {}
   void socketSend(const void *buf, int len) {
     spdlog::debug("[socketSend] | len: {} | fd: {}", len, sockfd_);
-    // printhexDump((char *)buf, len);
+    // printHexDump((char *)buf, len);
     send(sockfd_, buf, len, 0);
   }
   int getFd() { return sockfd_; }

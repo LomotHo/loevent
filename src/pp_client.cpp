@@ -7,7 +7,7 @@ using namespace loevent;
 
 void onMessage(const TcpConnectionPtr &conn) {
   // spdlog::info("[onMessage] recv len: {}", len);
-  // printhexDump(buf, len);
+  // printHexDump(buf, len);
   // std::string str("hello");
   // conn->send(str);
   int rb = conn->getRecvBuffer()->readableBytes();
