@@ -15,7 +15,7 @@ class HttpContext {
     ExpectBody,
     GotAll
   };
-  void parseHttpReq(BufferPtr buffer) {
+  bool parseHttpReq(BufferPtr buffer) {
     bool hasMore = true;
 
     while (hasMore) {
