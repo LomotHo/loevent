@@ -11,8 +11,20 @@ void onRequest(const HttpRequest &req, HttpResponse *res) {
   // std::string reqLine = req.getReqLine();
   res->setBody(
       "<html><head><title>This is title</title></head>"
-      "<body><h1>Hello</h1><p>request line: " +
-      req.getReqLine() + "</p></body></html>");
+      "<body><h1>Hello</h1>"
+      "<p>request line: " +
+      req.getReqLine() +
+      "</p>"
+      "<p>Method: " +
+      req.methodString() +
+      "</p>"
+      "<p>Path: " +
+      req.path() +
+      "</p>"
+      "<p>query: " +
+      req.query() +
+      "</p>"
+      "</body></html>");
 }
 using namespace loevent;
 int main(int argc, const char **argv) {
