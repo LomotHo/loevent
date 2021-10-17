@@ -3,7 +3,11 @@
 
 // #include <functional>
 
+#include <cstddef>
+
 #include "event_loop.hpp"
+#include "http_context.hpp"
+#include "http_request.hpp"
 #include "spdlog/spdlog.h"
 #include "tcp_server.hpp"
 #include "utils.hpp"
@@ -16,14 +20,20 @@ class HttpServer {
       : tcpServer_(loop, port, "httpserver", 4096), port_(port) {
     tcpServer_.setConnectionCallback([](const TcpConnectionPtr &conn) {
       spdlog::info("[onConnection] fd: {}", conn->getFd());
+      conn->setHttpContext(HttpContext());
     });
-    tcpServer_.setMessageCallback([](const TcpConnectionPtr &conn) {
-      BufferPtr bt = conn->getRecvBuffer();
-      int rb = bt->readableBytes();
-      printHexDump(bt->start(), rb);
 
-      conn->send(bt->start(), rb);
-      bt->retrieve(rb);
+    // status_ = HttpContextStatus::ExpectRequestLine;
+    tcpServer_.setMessageCallback([this](const TcpConnectionPtr &conn) {
+      // BufferPtr buffer = conn->getRecvBuffer();
+      HttpContext *contex = conn->getHttpContext();
+      contex->parseHttpReq(conn->getRecvBuffer());
+      // printHexDump(buffer->start(), len);
+      // conn->send(buffer->start(), len);
+      conn->send("HTTP/1.0 200 OK\r\n");
+      conn->send("{\"hello\":\"loevent\"}\r\n\r\n");
+      tcpServer_.closeConnection(conn->getFd());
+      // spdlog::debug("len: {}, crlf: 0x{}", len, crlf);
     });
   }
 

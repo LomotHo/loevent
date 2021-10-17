@@ -26,6 +26,11 @@ class Buffer {
       retrieveAll();
     }
   }
+  void retrieveUntil(const char* pos) {
+    assert(start() <= pos);
+    assert(pos <= end());
+    retrieve(pos - start());
+  }
   void retrieveAll() {
     readOffset_ = 0;
     writeOffset_ = 0;
@@ -54,6 +59,7 @@ class Buffer {
     writeOffset_ += len;
     return true;
   }
+
   void printInfo() {
     printf("head: %p\n", this->head());
     printf("start: %p\n", this->start());
@@ -61,10 +67,21 @@ class Buffer {
     // printf("writeOffset: %ld\n", writeOffset_);
   }
 
+  const char* findCRLF() {
+    const char* crlf = std::search(start(), end(), kCRLF, kCRLF + 2);
+    return crlf == end() ? NULL : crlf;
+  }
+
+  const char* findEOL() {
+    const void* eol = memchr(start(), '\n', readableBytes());
+    return static_cast<const char*>(eol);
+  }
+
  private:
   std::vector<char> buffer_;
   size_t readOffset_;
   size_t writeOffset_;
+  const char kCRLF[2] = {'\r', '\n'};
   char* head() { return &buffer_[0]; }
   void moveToHead() {
     int len = readableBytes();
