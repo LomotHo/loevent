@@ -1,18 +1,18 @@
 #ifndef __LOEVENT_HTTP_SERVER__
 #define __LOEVENT_HTTP_SERVER__
 
-// #include <functional>
-
-#include <cstddef>
+// #include <cstddef>
 
 #include "event_loop.hpp"
 #include "http_context.hpp"
 #include "http_request.hpp"
+#include "http_response.hpp"
 #include "spdlog/spdlog.h"
 #include "tcp_server.hpp"
 #include "utils.hpp"
 
 namespace loevent {
+typedef std::function<void(const HttpRequest &, HttpResponse *)> HttpCallback;
 
 class HttpServer {
  public:
@@ -23,23 +23,45 @@ class HttpServer {
       conn->setHttpContext(HttpContext());
     });
 
-    // status_ = HttpContextStatus::ExpectRequestLine;
     tcpServer_.setMessageCallback([this](const TcpConnectionPtr &conn) {
       // BufferPtr buffer = conn->getRecvBuffer();
       HttpContext *contex = conn->getHttpContext();
-      contex->parseHttpReq(conn->getRecvBuffer());
-      // printHexDump(buffer->start(), len);
-      // conn->send(buffer->start(), len);
-      conn->send("HTTP/1.0 200 OK\r\n");
-      conn->send("{\"hello\":\"loevent\"}\r\n\r\n");
-      tcpServer_.closeConnection(conn->getFd());
-      // spdlog::debug("len: {}, crlf: 0x{}", len, crlf);
+      HttpContextStatus status = contex->parseHttpReq(conn->getRecvBuffer());
+      if (status == HttpContextStatus::GotAll) {
+        onRawReq(conn, conn->getHttpContext()->getHttpRequest());
+        conn->getHttpContext()->reset();
+      } else if (status == HttpContextStatus::Broken) {
+        conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
+        tcpServer_.closeConnection(conn->getFd());
+      }
     });
+  }
+  void setHttpCallback(const HttpCallback &cb) { httpCallback_ = cb; }
+  void defaultHttpCallback(const HttpRequest &, HttpResponse *res) {
+    res->setStatusCode(HttpResponse::k404NotFound);
+    res->setStatusMessage("Not Found");
+    res->setCloseConnection(true);
   }
 
  private:
+  HttpCallback httpCallback_;
   TcpServer tcpServer_;
   int port_;
+  void onRawReq(const TcpConnectionPtr &conn, const HttpRequest &req) {
+    bool close = true;
+    HttpResponse response(close);
+    if (httpCallback_) {
+      httpCallback_(req, &response);
+    } else {
+      defaultHttpCallback(req, &response);
+    }
+    BufferPtr sendBuffer = response.genBuffer();
+    // sendBuffer->printInfo();
+    conn->send(sendBuffer);
+    if (response.getCloseConnection()) {
+      tcpServer_.closeConnection(conn->getFd());
+    }
+  }
 };
 
 }  // namespace loevent

@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <vector>
 
+#include "utils.hpp"
+
 namespace loevent {
 
 class Buffer {
@@ -35,6 +37,7 @@ class Buffer {
     readOffset_ = 0;
     writeOffset_ = 0;
   }
+
   bool manualWrite(size_t len) {
     if (writableBytes() < len) {
       moveToHead();
@@ -47,7 +50,7 @@ class Buffer {
     return true;
   }
 
-  bool write(char* buf, size_t len) {
+  bool write(const char* buf, size_t len) {
     if (writableBytes() < len) {
       moveToHead();
       if (writableBytes() < len) {
@@ -55,15 +58,19 @@ class Buffer {
         return false;
       }
     }
-    ::memcpy(head(), buf, len);
+    ::memcpy(end(), buf, len);
     writeOffset_ += len;
     return true;
   }
+  void append(const std::string& str) { write(str.c_str(), str.length()); }
+  void append(const char* str, size_t len) { write(str, len); }
 
   void printInfo() {
     printf("head: %p\n", this->head());
     printf("start: %p\n", this->start());
     printf("readOffset: %ld | writeOffset: %ld \n", readOffset_, writeOffset_);
+    printHexDump(this->start(), this->end() - this->start());
+
     // printf("writeOffset: %ld\n", writeOffset_);
   }
 

@@ -20,6 +20,8 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
 
   void send(std::string msg) { socket_.socketSend(msg.c_str(), msg.length()); }
   void send(void *msg, int len) { socket_.socketSend(msg, len); }
+  void send(Buffer &buf) { socket_.socketSend(buf.start(), buf.readableBytes()); }
+  void send(BufferPtr buf) { socket_.socketSend(buf->start(), buf->readableBytes()); }
   // void send(std::vector<char> msg) {
   //   socket_.socketSend(msg.data(), msg.size());
   // }

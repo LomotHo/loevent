@@ -48,12 +48,11 @@ void printBuf(const char *buffer, size_t len) {
   if (buffer == NULL || len <= 0) {
     return;
   }
-
-  printf("data str: ");
+  printf("[string content]: ");
   for (size_t i = 0; i < len; i++) {
     printf("%c", buffer[i]);
   }
-  // printf("]\n");
+  printf("\n");
 }
 
 }  // namespace loevent

@@ -20,9 +20,31 @@ class HttpRequest {
     spdlog::debug("header: {}:{}", filed, value);
     headers_[filed] = value;
   }
+  std::string getReqLine() const { return requestLine_; }
+  const std::string getHeader(std::string filed) {
+    if (headers_.find(filed) != headers_.end()) {
+      return headers_[filed];
+    } else {
+      return NULL;
+    }
+  }
+  void swap(HttpRequest& that) {
+    std::swap(method_, that.method_);
+    std::swap(version_, that.version_);
+    path_.swap(that.path_);
+    query_.swap(that.query_);
+    receiveTime_.swap(that.receiveTime_);
+    requestLine_.swap(that.requestLine_);
+    headers_.swap(that.headers_);
+  }
 
  private:
   std::string requestLine_;
+  std::string method_;
+  std::string version_;
+  std::string path_;
+  std::string query_;
+  std::string receiveTime_;
   std::map<std::string, std::string> headers_;
 };
 
