@@ -78,16 +78,17 @@ class HttpRequest {
   void addHeader(const char* begin, const char* colon, const char* end) {
     std::string field(begin, colon);
     std::string value(colon + 2, end);
-    spdlog::debug("header: {}:{}", field, value);
+    spdlog::debug("add header: {}:{}", field, value);
     headers_[field] = value;
   }
   const std::string getHeader(std::string field) const {
+    std::string header;
+
     auto it = headers_.find(field);
     if (it != headers_.end()) {
-      return it->second;
-    } else {
-      return NULL;
+      header = it->second;
     }
+    return header;
   }
   void swap(HttpRequest& that) {
     std::swap(method_, that.method_);

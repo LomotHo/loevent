@@ -28,7 +28,7 @@ void onRequest(const HttpRequest &req, HttpResponse *res) {
 }
 using namespace loevent;
 int main(int argc, const char **argv) {
-  // spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::debug);
   if (argc < 2) {
     error_quit("Example: ./server [port]");
   }

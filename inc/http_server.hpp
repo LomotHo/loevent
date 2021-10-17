@@ -48,7 +48,9 @@ class HttpServer {
   TcpServer tcpServer_;
   int port_;
   void onRawReq(const TcpConnectionPtr &conn, const HttpRequest &req) {
-    const std::string &connection = req.getHeader("Connection");
+    spdlog::debug("onRawReq");
+    const std::string connection = req.getHeader("Connection");
+    spdlog::debug("onRawReq 2");
 
     bool close = connection == "close" ||
                  (req.version() == HttpRequest::kHttp10 && connection != "Keep-Alive");
@@ -58,6 +60,7 @@ class HttpServer {
     } else {
       defaultHttpCallback(req, &response);
     }
+
     BufferPtr sendBuffer = response.genBuffer();
     // sendBuffer->printInfo();
     conn->send(sendBuffer);

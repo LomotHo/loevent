@@ -54,7 +54,7 @@ class HttpResponse {
   void addHeader(const char* begin, const char* colon, const char* end) {
     std::string field(begin, colon);
     std::string value(colon + 2, end);
-    spdlog::debug("header: {}:{}", field, value);
+    spdlog::debug("add header: {}:{}", field, value);
     headers_[field] = value;
   }
   void addHeader(std::string field, std::string value) { headers_[field] = value; }
