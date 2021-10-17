@@ -5,13 +5,12 @@
 ## http benchmark
 
 ```sh
-wrk -t4 -c100 -d60s --latency "http://localhost:3000"
+wrk -t4 -c1000 -d60s --latency "http://192.168.8.31:3000/api/v1/stream/?streamname=livestream1&edgename=edge240"
 ```
 
 - 结果
 
 ```
-wrk -t4 -c1000 -d60s --latency "http://192.168.8.31:3000/api/v1/stream/?streamname=livestream1&edgename=edge240"
 Running 1m test @ http://192.168.8.31:3000/api/v1/stream/?streamname=livestream1&edgename=edge240
   4 threads and 1000 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
