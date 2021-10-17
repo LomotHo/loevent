@@ -6,7 +6,7 @@ using namespace loevent;
 void onRequest(const HttpRequest &req, HttpResponse *res) {
   res->setStatusCode(HttpResponse::k200Ok);
   res->setStatusMessage("Ok");
-  res->setCloseConnection(true);
+  // res->setCloseConnection(false);
   // std::string now = Timestamp::now().toFormattedString();
   // std::string reqLine = req.getReqLine();
   res->setBody(
@@ -28,7 +28,7 @@ void onRequest(const HttpRequest &req, HttpResponse *res) {
 }
 using namespace loevent;
 int main(int argc, const char **argv) {
-  spdlog::set_level(spdlog::level::debug);
+  // spdlog::set_level(spdlog::level::debug);
   if (argc < 2) {
     error_quit("Example: ./server [port]");
   }

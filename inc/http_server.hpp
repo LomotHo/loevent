@@ -48,7 +48,10 @@ class HttpServer {
   TcpServer tcpServer_;
   int port_;
   void onRawReq(const TcpConnectionPtr &conn, const HttpRequest &req) {
-    bool close = true;
+    const std::string &connection = req.getHeader("Connection");
+
+    bool close = connection == "close" ||
+                 (req.version() == HttpRequest::kHttp10 && connection != "Keep-Alive");
     HttpResponse response(close);
     if (httpCallback_) {
       httpCallback_(req, &response);

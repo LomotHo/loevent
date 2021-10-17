@@ -76,14 +76,15 @@ class HttpRequest {
   // Timestamp receiveTime() const { return receiveTime_; }
 
   void addHeader(const char* begin, const char* colon, const char* end) {
-    std::string filed(begin, colon);
+    std::string field(begin, colon);
     std::string value(colon + 2, end);
-    spdlog::debug("header: {}:{}", filed, value);
-    headers_[filed] = value;
+    spdlog::debug("header: {}:{}", field, value);
+    headers_[field] = value;
   }
-  const std::string getHeader(std::string filed) {
-    if (headers_.find(filed) != headers_.end()) {
-      return headers_[filed];
+  const std::string getHeader(std::string field) const {
+    auto it = headers_.find(field);
+    if (it != headers_.end()) {
+      return it->second;
     } else {
       return NULL;
     }
