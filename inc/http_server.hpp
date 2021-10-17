@@ -50,7 +50,6 @@ class HttpServer {
   void onRawReq(const TcpConnectionPtr &conn, const HttpRequest &req) {
     spdlog::debug("onRawReq");
     const std::string connection = req.getHeader("Connection");
-    spdlog::debug("onRawReq 2");
 
     bool close = connection == "close" ||
                  (req.version() == HttpRequest::kHttp10 && connection != "Keep-Alive");
