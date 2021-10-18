@@ -21,20 +21,20 @@ find_package(spdlog REQUIRED)
 # ADD_LIBRARY(loevent STATIC ${LOEVENT_SRC})
 
 
-add_executable(pp_client src/pp_client.cpp)
+add_executable(pp_client example/pp_client.cpp)
 target_link_libraries(pp_client spdlog::spdlog)
 
-add_executable(echo_server src/echo_server.cpp)
+add_executable(echo_server example/echo_server.cpp)
 target_link_libraries(echo_server spdlog::spdlog)
 
-add_executable(http_demo src/http_demo.cpp)
-target_link_libraries(http_demo spdlog::spdlog)
+add_executable(http_server example/http_server.cpp)
+target_link_libraries(http_server spdlog::spdlog)
 
-add_executable(bench_cli src/bench_cli.cpp)
+add_executable(bench_cli example/bench_cli.cpp)
 target_link_libraries(bench_cli spdlog::spdlog)
 
-add_executable(cmd_client src/cmd_client.cpp)
+add_executable(cmd_client example/cmd_client.cpp)
 target_link_libraries(cmd_client)
 
-add_executable(demo src/demo.cpp)
+add_executable(demo example/demo.cpp)
 target_link_libraries(demo spdlog::spdlog)
