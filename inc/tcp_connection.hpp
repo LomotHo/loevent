@@ -6,7 +6,7 @@
 
 #include "buffer.hpp"
 #include "event_loop.hpp"
-#include "http_context.hpp"
+#include "http/http_context.hpp"
 #include "socket.hpp"
 
 namespace loevent {

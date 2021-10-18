@@ -4,9 +4,9 @@
 // #include <cstddef>
 
 #include "event_loop.hpp"
-#include "http_context.hpp"
-#include "http_request.hpp"
-#include "http_response.hpp"
+#include "http/http_context.hpp"
+#include "http/http_request.hpp"
+#include "http/http_response.hpp"
 #include "spdlog/spdlog.h"
 #include "tcp_server.hpp"
 #include "utils.hpp"

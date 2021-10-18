@@ -1,5 +1,6 @@
+#include "http/http_server.hpp"
+
 #include "event_loop.hpp"
-#include "http_server.hpp"
 
 using namespace loevent;
 

@@ -2,7 +2,8 @@
 #define __LOEVENT_HTTP_CONTEX__
 
 #include "buffer.hpp"
-#include "http_request.hpp"
+#include "http/http_request.hpp"
+#include "io_context.hpp"
 
 namespace loevent {
 
@@ -13,7 +14,7 @@ enum class HttpContextStatus {
   GotAll,
   Broken
 };
-class HttpContext {
+class HttpContext : IoContext {
  public:
   HttpContext() {}
   HttpContextStatus parseHttpReq(BufferPtr buffer) {
