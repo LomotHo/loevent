@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(reactor-demo)
+project(loevent)
 
 set(CMAKE_CXX_STANDARD 11) 
 set(CMAKE_CXX_STANDARD_REQUIRED True) 
@@ -19,7 +19,6 @@ find_package(spdlog REQUIRED)
 
 # include_directories("${PROJECT_SOURCE_DIR}/inc")
 # ADD_LIBRARY(loevent STATIC ${LOEVENT_SRC})
-
 
 add_executable(pp_client example/pp_client.cpp)
 target_link_libraries(pp_client spdlog::spdlog)
