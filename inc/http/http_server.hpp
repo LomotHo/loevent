@@ -3,10 +3,13 @@
 
 // #include <cstddef>
 
+#include <memory>
+
 #include "event_loop.hpp"
 #include "http/http_context.hpp"
 #include "http/http_request.hpp"
 #include "http/http_response.hpp"
+#include "io_context.hpp"
 #include "spdlog/spdlog.h"
 #include "tcp_server.hpp"
 #include "utils.hpp"
@@ -20,16 +23,17 @@ class HttpServer {
       : tcpServer_(loop, port, "httpserver", 4096), port_(port) {
     tcpServer_.setConnectionCallback([](const TcpConnectionPtr &conn) {
       spdlog::info("[onConnection] fd: {}", conn->getFd());
-      conn->setHttpContext(HttpContext());
+      conn->setContext(std::make_shared<HttpContext>());
     });
 
     tcpServer_.setMessageCallback([this](const TcpConnectionPtr &conn) {
       // BufferPtr buffer = conn->getRecvBuffer();
-      HttpContext *contex = conn->getHttpContext();
-      HttpContextStatus status = contex->parseHttpReq(conn->getRecvBuffer());
+      // HttpContext *contex = dynamic_cast<HttpContext *>(conn->getContext());
+      auto context = std::dynamic_pointer_cast<HttpContext>(conn->getContext());
+      HttpContextStatus status = context->parseHttpReq(conn->getRecvBuffer());
       if (status == HttpContextStatus::GotAll) {
-        onRawReq(conn, conn->getHttpContext()->getHttpRequest());
-        conn->getHttpContext()->reset();
+        onRawReq(conn, context->getHttpRequest());
+        context->reset();
       } else if (status == HttpContextStatus::Broken) {
         conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
         tcpServer_.closeConnection(conn->getFd());

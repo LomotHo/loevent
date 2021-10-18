@@ -6,7 +6,7 @@
 
 #include "buffer.hpp"
 #include "event_loop.hpp"
-#include "http/http_context.hpp"
+#include "io_context.hpp"
 #include "socket.hpp"
 
 namespace loevent {
@@ -29,8 +29,8 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   std::string getName() { return connName_; }
   ~TcpConnection() { spdlog::debug("connection destoried, fd: {}", getFd()); }
   BufferPtr getRecvBuffer() { return recvBuffePtr_; }
-  void setHttpContext(const HttpContext &context) { context_ = context; }
-  HttpContext *getHttpContext() { return &context_; }
+  void setContext(const IoContextPtr &context) { context_ = context; }
+  IoContextPtr getContext() { return context_; }
 
  private:
   // IoEvent &ioEvent_;
@@ -38,7 +38,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   BufferPtr recvBuffePtr_;
   std::string connName_;
   EventLoop &loop_;
-  HttpContext context_;
+  IoContextPtr context_;
 };
 
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;

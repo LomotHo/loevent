@@ -14,7 +14,7 @@ enum class HttpContextStatus {
   GotAll,
   Broken
 };
-class HttpContext : IoContext {
+class HttpContext : public IoContext {
  public:
   HttpContext() {}
   HttpContextStatus parseHttpReq(BufferPtr buffer) {
