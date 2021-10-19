@@ -34,7 +34,7 @@ class TcpServer {
     accepter_ = new Accepter(port);
     int listenfd = accepter_->getFd();
     loop_.createIoEvent(listenfd, std::bind(&TcpServer::onAceptEvent, this, listenfd),
-                        POLLIN | POLLRDHUP);
+                        POLLIN | POLLRDHUP | POLLERR | POLLHUP);
   }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
   void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }

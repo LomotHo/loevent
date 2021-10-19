@@ -37,3 +37,6 @@ target_link_libraries(cmd_client)
 
 add_executable(demo example/demo.cpp)
 target_link_libraries(demo spdlog::spdlog)
+
+add_executable(test example/test.cpp)
+target_link_libraries(test spdlog::spdlog)

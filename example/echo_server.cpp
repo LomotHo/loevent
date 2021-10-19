@@ -16,9 +16,10 @@ void onMessage(const TcpConnectionPtr &conn) {
   // conn->send(str);
   // if (conn->getRecvBuffer()->readableBytes()) {
   // }
-  int rb = conn->getRecvBuffer()->readableBytes();
-  conn->send(conn->getRecvBuffer()->start(), rb);
-  conn->getRecvBuffer()->retrieve(rb);
+  auto buffer = conn->getRecvBuffer();
+  int rb = buffer->readableBytes();
+  conn->send(buffer->start(), rb);
+  buffer->retrieve(rb);
 }
 
 int main(int argc, char const *argv[]) {

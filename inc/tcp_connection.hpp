@@ -16,6 +16,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
  public:
   TcpConnection(EventLoop &loop, std::string connName, int sockfd, size_t bufferSize)
       : socket_(sockfd), connName_(connName), loop_(loop) {
+    // recvBuffePtr_ = std::make_shared<Buffer>(128);
     recvBuffePtr_ = std::make_shared<Buffer>(bufferSize);
   }
 
