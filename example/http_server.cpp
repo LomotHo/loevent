@@ -36,7 +36,7 @@ int main(int argc, const char **argv) {
   int port = strtol(argv[1], NULL, 10);
 
   EventLoop eventLoop(20480);
-  HttpServer httpServer(eventLoop, 3000);
+  HttpServer httpServer(eventLoop, port);
   httpServer.setHttpCallback(onRequest);
   eventLoop.loop();
 

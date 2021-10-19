@@ -1,6 +1,7 @@
 #ifndef __LOEVENT_TCP_CONNECTION__
 #define __LOEVENT_TCP_CONNECTION__
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -13,9 +14,9 @@ namespace loevent {
 
 class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnection> {
  public:
-  TcpConnection(EventLoop &loop, std::string connName, int sockfd)
+  TcpConnection(EventLoop &loop, std::string connName, int sockfd, size_t bufferSize)
       : socket_(sockfd), connName_(connName), loop_(loop) {
-    recvBuffePtr_ = std::make_shared<Buffer>(16384);
+    recvBuffePtr_ = std::make_shared<Buffer>(bufferSize);
   }
 
   void send(std::string msg) { socket_.socketSend(msg.c_str(), msg.length()); }

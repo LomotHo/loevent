@@ -84,7 +84,8 @@ class TcpServer {
     snprintf(buf, sizeof buf, "-%d", nextConnId_);
     nextConnId_++;
     std::string connName = name_ + buf;
-    auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd);
+    auto conn =
+        std::make_shared<TcpConnection>(loop_, connName, sockfd, 2 * maxMessageLen_);
     loop_.createIoEvent(sockfd, std::bind(&TcpServer::onRecvEvent, this, sockfd, conn),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
 

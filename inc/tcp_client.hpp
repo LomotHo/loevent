@@ -22,7 +22,7 @@ class TcpClient {
     char connName[64];
     snprintf(connName, sizeof connName, "client-%d", sockfd_);
 
-    conn_ = std::make_shared<TcpConnection>(loop_, connName, sockfd_);
+    conn_ = std::make_shared<TcpConnection>(loop_, connName, sockfd_, 2 * maxMessageLen);
 
     loop_.createIoEvent(
         sockfd_,
