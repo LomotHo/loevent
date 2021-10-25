@@ -22,7 +22,11 @@ class HttpServer {
   HttpServer(EventLoop &loop, int port)
       : tcpServer_(loop, port, "httpserver", 4096), port_(port) {
     tcpServer_.setConnectionCallback([](const TcpConnectionPtr &conn) {
-      spdlog::info("[onConnection] fd: {}", conn->getFd());
+      // spdlog::debug("[onConnection] fd: {}", conn->getFd());
+      int fd = conn->getFd();
+      if (fd % 200 == 0) {
+        spdlog::info("[onConnection] fd: {}", fd);
+      }
       conn->setContext(std::make_shared<HttpContext>());
     });
 

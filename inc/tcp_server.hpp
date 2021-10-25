@@ -4,8 +4,9 @@
 #include <netinet/in.h>
 
 #include <functional>
-#include <map>
+// #include <map>
 #include <string>
+#include <unordered_map>
 
 #include "accepter.hpp"
 #include "event_loop.hpp"
@@ -14,7 +15,8 @@
 
 namespace loevent {
 
-typedef std::map<int, TcpConnectionPtr> ConnectionMap;
+// typedef std::map<int, TcpConnectionPtr> ConnectionMap;
+typedef std::unordered_map<int, TcpConnectionPtr> ConnectionMap;
 
 class TcpServer {
  private:
@@ -43,16 +45,23 @@ class TcpServer {
     loop_.closeIoEvent(sockfd);
   }
   void onAceptEvent(int listenfd) {
-    spdlog::debug("[accept] listenfd: {}", listenfd);
-    int sockfd = accepter_->doAccept();
-    spdlog::info("[accept] sockfd: {}", sockfd);
-    // auto conn = newConnection(sockfd);
-    newConnection(sockfd);
+    while (true) {
+      int sockfd = accepter_->doAccept();
+      if (sockfd == -1) {
+        // spdlog::info("[accept] -1");
+        // spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno), sockfd);
+        return;
+      }
+      fcntl(sockfd, F_SETFL, O_NONBLOCK);
+      // spdlog::debug("[accept] sockfd: {}", sockfd);
+      newConnection(sockfd);
+    }
   }
   void onRecvEvent(int fd, TcpConnectionPtr conn) {
-    int wb = conn->getRecvBuffer()->writableBytes();
-    int n = recv(fd, conn->getRecvBuffer()->end(), wb, 0);
-    conn->getRecvBuffer()->manualWrite(n);
+    auto buffer = conn->getRecvBuffer();
+    int wb = buffer->writableBytes();
+    int n = recv(fd, buffer->end(), wb, 0);
+    buffer->manualWrite(n);
     // char recvBuf[maxMessageLen_];
     // int n = recv(fd, recvBuf, maxMessageLen_, 0);
     if (n > 0) {

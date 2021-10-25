@@ -1,6 +1,7 @@
 #ifndef __LOEVENT_ACCEPTER__
 #define __LOEVENT_ACCEPTER__
 
+#include <fcntl.h>
 #include <netinet/in.h>
 
 #include <cstring>
@@ -21,7 +22,7 @@ class Accepter {
     if ((listenfd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
       error_quit("Error creating socket..");
     }
-    // fcntl(listenfd_, F_SETFL, O_NONBLOCK);
+    fcntl(listenfd_, F_SETFL, O_NONBLOCK);
     int on = 1;
     setsockopt(listenfd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
     if (bind(listenfd_, (struct sockaddr *)&servaddr_, sizeof(servaddr_)) < 0) {
@@ -33,23 +34,22 @@ class Accepter {
     }
   }
   int getFd() { return listenfd_; }
-  int doAccept() {
-    struct sockaddr_in cliaddr;
-    socklen_t clilen = sizeof(cliaddr);
-    int sockfd =
-        // accept4(listenfd_, (struct sockaddr *)&cliaddr, &clilen,
-        // SOCK_NONBLOCK);
-        accept(listenfd_, (struct sockaddr *)&cliaddr, &clilen);
-    if (sockfd == -1) {
-      error_quit("Error accepting new connection..");
-      return -1;
-    }
-    return sockfd;
+  inline int doAccept() {
+    // int sockfd =
+    //     accept4(listenfd_, (struct sockaddr *)&cliaddr_, &clilen_, SOCK_NONBLOCK);
+    // // accept(listenfd_, (struct sockaddr *)&cliaddr, &clilen);
+    // if (sockfd == -1) {
+    //   return -1;
+    // }
+    // return sockfd;
+    return accept4(listenfd_, (struct sockaddr *)&cliaddr_, &clilen_, SOCK_NONBLOCK);
   }
 
  private:
   int listenfd_;
   struct sockaddr_in servaddr_;
+  struct sockaddr_in cliaddr_;
+  socklen_t clilen_ = sizeof(cliaddr_);
 };
 
 }  // namespace loevent

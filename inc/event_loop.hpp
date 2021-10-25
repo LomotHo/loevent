@@ -6,7 +6,9 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
-#include <map>
+#include <unordered_map>
+
+// #include <map>
 #include <string>
 
 #include "io_event.hpp"
@@ -15,7 +17,7 @@
 namespace loevent {
 
 typedef std::shared_ptr<IoEvent> IoEventPtr;
-typedef std::map<int, IoEventPtr> IoEventMap;
+typedef std::unordered_map<int, IoEventPtr> IoEventMap;
 
 class EventLoop {
  private:
