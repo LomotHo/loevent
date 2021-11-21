@@ -1,0 +1,5 @@
+{
+  "editor.snippetSuggestions": "top", // （可选）snippets显示在补全列表顶端，默认是inline
+  "files.defaultLanguage": "cpp", // ctrl+N新建文件后默认的语言，c语言改成c即可
+  "editor.suggest.snippetsPreventQuickSuggestions": false // clangd的snippets有很多的跳转点，不用这个就必须手动触发Intellisense了
+}

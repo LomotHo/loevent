@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+      {
+          "label": "Compile", // 任务名称，与launch.json的preLaunchTask相对应
+          "type": "process", // 可以为process或shell
+          "command": "clang++", // 要使用的编译器，C语言用clang
+          "args": [
+              "${file}",
+              "-g", // 生成和调试有关的信息, 如果加上该参数，编译后不仅会生成.out可执行文件，还会生成后缀为.out.dSYM的文件夹，如果不加，调试器会忽略你设的断点
+              "-o", // 指定输出文件名，os X和Linux下不加该参数则默认输出a.out，win下默认a.exe
+              "${fileDirname}/bin/${fileBasenameNoExtension}.out", // 指定编译生成结果（.out文件和.out.dSYM文件夹）
+              "-Wall", // 开启额外警告
+              "-stdlib=libc++", // 静态链接libc++，Linux下似乎会出错，出错的话删掉这行就行
+              "-std=c++11" // 这里采用c++17标准（推荐），C语言改成"-std=c11"
+          ], // 编译的命令，其实相当于VSC帮你在终端中输了这一串东西
+          "group": {
+              "kind": "build",
+              "isDefault": true // 不为true时command shift B快捷键就要手动选择了
+          },
+          "options": {
+              "cwd": "${fileDirname}"
+          },
+          "presentation": {
+              "echo": true,
+              "reveal": "always", // 执行任务时是否跳转到终端面板，可以为always，silent，never。具体参见VSC的文档，即使设为never，手动点进去还是可以看到
+              "focus": false, // 设为true后可以使执行task时焦点聚集在终端，但对编译C/C++来说，设为true没有意义
+              "panel": "shared" // 不同的文件的编译信息共享一个终端面板
+          }
+      }
+  ]
+} 
