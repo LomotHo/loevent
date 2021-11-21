@@ -36,12 +36,6 @@ void printHexDump(const char *buffer, size_t len) {
     printf("%.2X ", (unsigned char)buffer[i]);
   }
   printf("]\n");
-
-  printf("[string content]: ");
-  for (size_t i = 0; i < len; i++) {
-    printf("%c", buffer[i]);
-  }
-  printf("\n");
 }
 
 void printBuf(const char *buffer, size_t len) {

@@ -40,3 +40,8 @@ target_link_libraries(demo spdlog::spdlog)
 
 add_executable(test example/test.cpp)
 target_link_libraries(test spdlog::spdlog)
+
+add_executable(rpc_server example/rpc_server.cpp)
+target_link_libraries(rpc_server spdlog::spdlog)
+add_executable(rpc_client example/rpc_client.cpp)
+target_link_libraries(rpc_client spdlog::spdlog)

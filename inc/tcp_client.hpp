@@ -30,8 +30,9 @@ class TcpClient {
           char recvBuf[maxMessageLen_];
           int n = recv(sockfd_, recvBuf, maxMessageLen_, 0);
           if (n > 0) {
-            int wb = conn_->getRecvBuffer()->writableBytes();
-            if (!conn_->getRecvBuffer()->write(recvBuf, n)) {
+            auto buffer = conn_->getRecvBuffer();
+            int wb = buffer->writableBytes();
+            if (!buffer->write(recvBuf, n)) {
               spdlog::error("write buffer error, fd: {}", sockfd_);
             }
             messageCallback_(conn_);

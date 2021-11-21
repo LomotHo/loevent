@@ -14,14 +14,12 @@ void onConnection(const TcpConnectionPtr &conn) {
 }
 
 void onMessage(const TcpConnectionPtr &conn) {
-  // spdlog::info("[onMessage] recv len: {}", len);
-  // printHexDump(buf, len);
-  // std::string str("hello");
-  // conn->send(str);
-  // if (conn->getRecvBuffer()->readableBytes()) {
-  // }
   auto buffer = conn->getRecvBuffer();
   int rb = buffer->readableBytes();
+
+  // spdlog::info("[onMessage] recv len: {}", rb);
+  // printHexDump(buffer->start(), rb);
+
   conn->send(buffer->start(), rb);
   buffer->retrieve(rb);
 }

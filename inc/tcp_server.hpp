@@ -2,6 +2,7 @@
 #define __LOEVENT_TCP_SERVER__
 
 #include <netinet/in.h>
+#include <spdlog/spdlog.h>
 
 #include <functional>
 // #include <map>
@@ -48,42 +49,47 @@ class TcpServer {
     while (true) {
       int sockfd = accepter_->doAccept();
       if (sockfd == -1) {
-        // spdlog::info("[accept] -1");
-        // spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno), sockfd);
         return;
       }
       fcntl(sockfd, F_SETFL, O_NONBLOCK);
-      // spdlog::debug("[accept] sockfd: {}", sockfd);
       newConnection(sockfd);
     }
   }
   void onRecvEvent(int fd, TcpConnectionPtr conn) {
     auto buffer = conn->getRecvBuffer();
-    int wb = buffer->writableBytes();
-    int n = recv(fd, buffer->end(), wb, 0);
-    buffer->manualWrite(n);
-    // char recvBuf[maxMessageLen_];
-    // int n = recv(fd, recvBuf, maxMessageLen_, 0);
-    if (n > 0) {
-      // int wb = conn->getRecvBuffer()->writableBytes();
-      // if (!conn->getRecvBuffer()->write(recvBuf, n)) {
-      //   spdlog::error("write buffer error, fd: {}", fd);
-      // }
-      messageCallback_(conn);
-    } else if (n == 0) {
-      if (errno != 0) {
-        spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno), fd);
-      }
-      spdlog::info("connection closed, sockfd: {}", fd);
-      closeConnection(fd);
-    } else if (n == -1) {
-      spdlog::error("{}: {} | sockfd: {}", errno, strerror(errno), fd);
-      if (errno != EAGAIN && errno != EINTR) {
+    while (true) {
+      int wb = buffer->writableBytes();
+      if (wb == 0) {
+        spdlog::info("write buffer full");
         closeConnection(fd);
+        break;
       }
-    } else {
-      spdlog::error("unknow error: func recv return {}", n);
-      closeConnection(fd);
+      int n = recv(fd, buffer->end(), wb, 0);
+      spdlog::debug("recv n: {} | writableBytes: {}", n, wb);
+      if (n > 0) {
+        // if (!conn->getRecvBuffer()->write(recvBuf, n)) {
+        //   spdlog::error("write buffer error, fd: {}", fd);
+        // }
+        buffer->manualWrite(n);
+        messageCallback_(conn);
+        if (n < wb) {
+          break;
+        }
+      } else {
+        if (errno != 0) {
+          if (errno == EAGAIN) {
+            spdlog::debug("{}: EAGAIN | sockfd: {} | n: {}", errno, fd, n);
+          } else if (errno == EINTR) {
+            spdlog::debug("{}: EINTR | sockfd: {} | n: {}", errno, fd, n);
+          } else {
+            spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
+          }
+        }
+        if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
+          closeConnection(fd);
+        }
+        break;
+      }
     }
   }
 
@@ -93,8 +99,7 @@ class TcpServer {
     snprintf(buf, sizeof buf, "-%d", nextConnId_);
     nextConnId_++;
     std::string connName = name_ + buf;
-    auto conn =
-        std::make_shared<TcpConnection>(loop_, connName, sockfd, 2 * maxMessageLen_);
+    auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd, maxMessageLen_);
     loop_.createIoEvent(sockfd, std::bind(&TcpServer::onRecvEvent, this, sockfd, conn),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
 
@@ -104,7 +109,6 @@ class TcpServer {
     }
     return conn;
   }
-  // void start(int a) {}
 };
 
 }  // namespace loevent
