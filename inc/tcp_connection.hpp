@@ -18,6 +18,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
       : socket_(sockfd), connName_(connName), loop_(loop) {
     // recvBuffePtr_ = std::make_shared<Buffer>(128);
     recvBuffePtr_ = std::make_shared<Buffer>(bufferSize);
+    sendBuffePtr_ = std::make_shared<Buffer>(bufferSize);
   }
 
   void send(std::string msg) { socket_.send(msg.c_str(), msg.length()); }
@@ -38,6 +39,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   // IoEvent &ioEvent_;
   Socket socket_;
   BufferPtr recvBuffePtr_;
+  BufferPtr sendBuffePtr_;
   std::string connName_;
   EventLoop &loop_;
   IoContextPtr context_;

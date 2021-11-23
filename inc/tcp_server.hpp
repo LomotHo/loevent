@@ -79,8 +79,8 @@ class TcpServer {
         if (errno != 0) {
           if (errno == EAGAIN) {
             spdlog::debug("{}: EAGAIN | sockfd: {} | n: {}", errno, fd, n);
-          } else if (errno == EINTR) {
-            spdlog::debug("{}: EINTR | sockfd: {} | n: {}", errno, fd, n);
+          } else if (errno == EINTR || errno == ECONNRESET || errno == ENOTCONN) {
+            spdlog::debug("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
           } else {
             spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
           }
