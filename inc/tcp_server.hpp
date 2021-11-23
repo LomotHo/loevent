@@ -41,10 +41,11 @@ class TcpServer {
   }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
   void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }
-  void closeConnection(int sockfd) {
-    tcpConnections_.erase(sockfd);
-    loop_.closeIoEvent(sockfd);
-  }
+  // void closeConnection(int sockfd) {
+  //   // FIX: need lock
+  //   tcpConnections_.erase(sockfd);
+  //   loop_.closeIoEvent(sockfd);
+  // }
   void onAceptEvent(int listenfd) {
     while (true) {
       int sockfd = accepter_->doAccept();
@@ -55,43 +56,6 @@ class TcpServer {
       newConnection(sockfd);
     }
   }
-  void onRecvEvent(int fd, TcpConnectionPtr conn) {
-    auto buffer = conn->getRecvBuffer();
-    while (true) {
-      int wb = buffer->writableBytes();
-      if (wb == 0) {
-        spdlog::info("write buffer full");
-        closeConnection(fd);
-        break;
-      }
-      int n = recv(fd, buffer->end(), wb, MSG_DONTWAIT);
-      spdlog::debug("recv n: {} | writableBytes: {}", n, wb);
-      if (n > 0) {
-        // if (!conn->getRecvBuffer()->write(recvBuf, n)) {
-        //   spdlog::error("write buffer error, fd: {}", fd);
-        // }
-        buffer->manualWrite(n);
-        messageCallback_(conn);
-        if (n < wb) {
-          break;
-        }
-      } else {
-        if (errno != 0) {
-          if (errno == EAGAIN) {
-            spdlog::debug("{}: EAGAIN | sockfd: {} | n: {}", errno, fd, n);
-          } else if (errno == EINTR || errno == ECONNRESET || errno == ENOTCONN) {
-            spdlog::debug("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
-          } else {
-            spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
-          }
-        }
-        if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
-          closeConnection(fd);
-        }
-        break;
-      }
-    }
-  }
 
   TcpConnectionPtr newConnection(int sockfd) {
     spdlog::debug("newConnection fd: {}", sockfd);
@@ -100,7 +64,13 @@ class TcpServer {
     nextConnId_++;
     std::string connName = name_ + buf;
     auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd, maxMessageLen_);
-    loop_.createIoEvent(sockfd, std::bind(&TcpServer::onRecvEvent, this, sockfd, conn),
+    conn->setMessageCallback(messageCallback_);
+    conn->setCloseCallback([this](const TcpConnectionPtr conn) {
+      // int sockfd = conn->getFd();
+      tcpConnections_.erase(conn->getFd());
+    });
+
+    loop_.createIoEvent(sockfd, std::bind(&TcpConnection::onRecv, conn, sockfd, conn),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
 
     tcpConnections_[sockfd] = conn;

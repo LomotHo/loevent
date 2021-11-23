@@ -18,57 +18,22 @@ class TcpClient {
     connector_ = new Connector(ip, port);
     connector_->doConnect();
     sockfd_ = connector_->getFd();
-
     char connName[64];
     snprintf(connName, sizeof connName, "client-%d", sockfd_);
-
-    conn_ = std::make_shared<TcpConnection>(loop_, connName, sockfd_, 2 * maxMessageLen);
-
-    loop_.createIoEvent(
-        sockfd_,
-        [this]() {
-          auto buffer = conn_->getRecvBuffer();
-          while (true) {
-            int wb = buffer->writableBytes();
-            if (wb == 0) {
-              spdlog::info("write buffer full");
-              closeConnection(sockfd_);
-              break;
-            }
-            int n = recv(sockfd_, buffer->end(), wb, MSG_DONTWAIT);
-            spdlog::debug("recv n: {} | writableBytes: {}", n, wb);
-            if (n > 0) {
-              buffer->manualWrite(n);
-              messageCallback_(conn_);
-              if (n < wb) {
-                break;
-              }
-            } else {
-              if (errno != 0) {
-                if (errno == EAGAIN) {
-                  spdlog::debug("{}: EAGAIN | sockfd: {} | n: {}", errno, sockfd_, n);
-                } else if (errno == EINTR || errno == ECONNRESET || errno == ENOTCONN) {
-                  spdlog::debug("{}: {} | sockfd: {} | n: {}", errno, strerror(errno),
-                                sockfd_, n);
-                } else {
-                  spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno),
-                                sockfd_, n);
-                }
-              }
-              if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
-                closeConnection(sockfd_);
-              }
-              break;
-            }
-          }
-        },
-        POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
+    conn_ = std::make_shared<TcpConnection>(loop_, connName, sockfd_, maxMessageLen);
+    // conn_->setCloseCallback(
+    //     [this](const TcpConnectionPtr conn) { spdlog::debug("close connection"); });
   }
 
-  void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
+  void setMessageCallback(const MessageCallback &cb) {
+    messageCallback_ = cb;
+    conn_->setMessageCallback(messageCallback_);
+    loop_.createIoEvent(sockfd_, std::bind(&TcpConnection::onRecv, conn_, sockfd_, conn_),
+                        POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
+  }
   void send(std::string msg) { conn_->send(msg); }
   void send(void *msg, int len) { conn_->send(msg, len); }
-  void closeConnection(int fd) { loop_.closeIoEvent(fd); }
+  void closeConnection(int fd) { conn_->closeConnection(); }
 
  private:
   MessageCallback messageCallback_;

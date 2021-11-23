@@ -40,7 +40,8 @@ class HttpServer {
         context->reset();
       } else if (status == HttpContextStatus::Broken) {
         conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
-        tcpServer_.closeConnection(conn->getFd());
+        conn->closeConnection();
+        // tcpServer_.closeConnection(conn->getFd());
       }
     });
   }
@@ -72,7 +73,7 @@ class HttpServer {
     // sendBuffer->printInfo();
     conn->send(sendBuffer);
     if (response.getCloseConnection()) {
-      tcpServer_.closeConnection(conn->getFd());
+      conn->closeConnection();
     }
   }
 };
