@@ -35,8 +35,8 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
 
   void send(const void *msg, int len) {
     int fd = socket_.getFd();
-    // int n = socket_.send(msg, len);
-    int n = socket_.nonBlockSend(msg, len);
+    int n = socket_.send(msg, len);
+    // int n = socket_.nonBlockSend(msg, len);
     // while (true) {
     // }
     // if (errno != 0) {
