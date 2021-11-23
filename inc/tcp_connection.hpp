@@ -27,19 +27,22 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
 
   void send(const void *msg, int len) {
     int fd = socket_.getFd();
-    int n = socket_.nonBlockSend(msg, len);
-    if (errno != 0) {
-      if (errno == EAGAIN) {
-        spdlog::debug("{}: EAGAIN | sockfd: {} | n: {}", errno, fd, n);
-      } else if (errno == EINTR || errno == ECONNRESET || errno == ENOTCONN) {
-        spdlog::debug("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
-      } else {
-        spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
-      }
-    }
-    if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
-      // closeConnection(fd);
-    }
+    int n = socket_.send(msg, len);
+    // int n = socket_.nonBlockSend(msg, len);
+    // while (true) {
+    // }
+    // if (errno != 0) {
+    //   if (errno == EAGAIN) {
+    //     spdlog::error("{}: EAGAIN | sockfd: {} | n: {}", errno, fd, n);
+    //   } else if (errno == EINTR || errno == ECONNRESET || errno == ENOTCONN) {
+    //     spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
+    //   } else {
+    //     spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
+    //   }
+    // }
+    // if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
+    //   // closeConnection(fd);
+    // }
   }
 
   int getFd() { return socket_.getFd(); }
