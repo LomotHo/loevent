@@ -20,12 +20,12 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     recvBuffePtr_ = std::make_shared<Buffer>(bufferSize);
   }
 
-  void send(std::string msg) { socket_.socketSend(msg.c_str(), msg.length()); }
-  void send(void *msg, int len) { socket_.socketSend(msg, len); }
-  void send(Buffer &buf) { socket_.socketSend(buf.start(), buf.readableBytes()); }
-  void send(BufferPtr buf) { socket_.socketSend(buf->start(), buf->readableBytes()); }
+  void send(std::string msg) { socket_.send(msg.c_str(), msg.length()); }
+  void send(void *msg, int len) { socket_.send(msg, len); }
+  void send(Buffer &buf) { socket_.send(buf.start(), buf.readableBytes()); }
+  void send(BufferPtr buf) { socket_.send(buf->start(), buf->readableBytes()); }
   // void send(std::vector<char> msg) {
-  //   socket_.socketSend(msg.data(), msg.size());
+  //   socket_.send(msg.data(), msg.size());
   // }
   int getFd() { return socket_.getFd(); }
   std::string getName() { return connName_; }
