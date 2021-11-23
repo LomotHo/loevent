@@ -64,7 +64,7 @@ class TcpServer {
         closeConnection(fd);
         break;
       }
-      int n = recv(fd, buffer->end(), wb, 0);
+      int n = recv(fd, buffer->end(), wb, MSG_DONTWAIT);
       spdlog::debug("recv n: {} | writableBytes: {}", n, wb);
       if (n > 0) {
         // if (!conn->getRecvBuffer()->write(recvBuf, n)) {

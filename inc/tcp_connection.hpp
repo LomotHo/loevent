@@ -21,13 +21,27 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     sendBuffePtr_ = std::make_shared<Buffer>(bufferSize);
   }
 
-  void send(std::string msg) { socket_.send(msg.c_str(), msg.length()); }
-  void send(void *msg, int len) { socket_.send(msg, len); }
-  void send(Buffer &buf) { socket_.send(buf.start(), buf.readableBytes()); }
-  void send(BufferPtr buf) { socket_.send(buf->start(), buf->readableBytes()); }
-  // void send(std::vector<char> msg) {
-  //   socket_.send(msg.data(), msg.size());
-  // }
+  void send(std::string msg) { send(msg.c_str(), msg.length()); }
+  void send(Buffer &buf) { send(buf.start(), buf.readableBytes()); }
+  void send(BufferPtr buf) { send(buf->start(), buf->readableBytes()); }
+
+  void send(const void *msg, int len) {
+    int fd = socket_.getFd();
+    int n = socket_.nonBlockSend(msg, len);
+    if (errno != 0) {
+      if (errno == EAGAIN) {
+        spdlog::debug("{}: EAGAIN | sockfd: {} | n: {}", errno, fd, n);
+      } else if (errno == EINTR || errno == ECONNRESET || errno == ENOTCONN) {
+        spdlog::debug("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
+      } else {
+        spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
+      }
+    }
+    if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
+      // closeConnection(fd);
+    }
+  }
+
   int getFd() { return socket_.getFd(); }
   std::string getName() { return connName_; }
   ~TcpConnection() { spdlog::debug("connection destoried, fd: {}", getFd()); }
