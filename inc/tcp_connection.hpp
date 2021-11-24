@@ -1,6 +1,8 @@
 #ifndef __LOEVENT_TCP_CONNECTION__
 #define __LOEVENT_TCP_CONNECTION__
 
+#include <spdlog/spdlog.h>
+
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -22,21 +24,50 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
  public:
   TcpConnection(EventLoop &loop, std::string connName, int sockfd, size_t bufferSize)
       : socket_(sockfd), connName_(connName), loop_(loop) {
-    // recvBuffePtr_ = std::make_shared<Buffer>(128);
     recvBuffePtr_ = std::make_shared<Buffer>(bufferSize);
-    sendBuffePtr_ = std::make_shared<Buffer>(bufferSize);
+    // sendBuffePtr_ = std::make_shared<Buffer>(bufferSize);
+    sendBuffePtr_ = std::make_shared<Buffer>(4, 8);
   }
 
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
   void setCloseCallback(const MessageCallback &cb) { closeCallback_ = cb; }
-  void send(std::string msg) { send(msg.c_str(), msg.length()); }
-  void send(Buffer &buf) { send(buf.start(), buf.readableBytes()); }
-  void send(BufferPtr buf) { send(buf->start(), buf->readableBytes()); }
+  int send(std::string msg) { return send(msg.c_str(), msg.length()); }
+  int send(Buffer &buf) { return send(buf.start(), buf.readableBytes()); }
+  int send(BufferPtr buf) { return send(buf->start(), buf->readableBytes()); }
 
-  void send(const void *msg, int len) {
+  int send(const char *msg, int len) {
     int fd = socket_.getFd();
-    int n = socket_.send(msg, len);
-    // int n = socket_.nonBlockSend(msg, len);
+    return socket_.send(msg, len);
+    // if (sendBuffePtr_->readableBytes() == 0) {
+    //   int nAlreadySend = 0;
+    //   // nAlreadySend = socket_.nonBlockSend(msg, len);
+    //   if (nAlreadySend < len) {
+    //     spdlog::debug("total {} |AlreadySend {}", len, nAlreadySend);
+    //     sendBuffePtr_->write(msg + nAlreadySend, len - nAlreadySend);
+    //     loop_.createIoEvent(
+    //         fd,
+    //         [this, fd, nAlreadySend]() {
+    //           auto buffer = sendBuffePtr_;
+    //           int rb = buffer->readableBytes();
+    //           spdlog::debug("send in OUT event {} | ", fd);
+    //           if (rb == 0) {
+    //             spdlog::debug("close OUT event");
+    //             loop_.closeIoEvent(fd);
+    //             return;
+    //           }
+    //           int n = socket_.nonBlockSend(buffer->start() + nAlreadySend, rb);
+    //           if (n > 0) {
+    //             buffer->retrieve(n);
+    //           }
+    //         },
+    //         POLLOUT);
+    //   }
+    // } else {
+    //   // FIX need lock
+    //   sendBuffePtr_->write(msg, len);
+    // }
+
+    // sendBuffePtr_->write(msg, len);
     // while (true) {
     // }
     // if (errno != 0) {

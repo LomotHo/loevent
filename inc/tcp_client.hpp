@@ -32,7 +32,7 @@ class TcpClient {
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
   }
   void send(std::string msg) { conn_->send(msg); }
-  void send(void *msg, int len) { conn_->send(msg, len); }
+  void send(char *msg, int len) { conn_->send(msg, len); }
   void closeConnection(int fd) { conn_->closeConnection(); }
 
  private:

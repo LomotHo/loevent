@@ -28,7 +28,7 @@ void onMessage(const TcpConnectionPtr &conn) {
     auto data = static_cast<void *>(buffer->start());
     auto data2 = static_cast<RpcData *>(data);
     data2->increaseNum++;
-    conn->send(data2, RpcDataLen);
+    conn->send((char *)data2, RpcDataLen);
     buffer->retrieve(RpcDataLen);
   }
 }

@@ -84,11 +84,18 @@ class Buffer {
   }
 
   bool write(const char* buf, size_t len) {
-    if (writableBytes() < len) {
-      spdlog::error("buffer error");
+    if (MaxLength_ < len) {
+      spdlog::error("write to buffer too much");
       return false;
-    }
-    if (writableBytes() == len) {
+    } else if (writableBytes() < len) {
+      int resize = writeOffset_ + len;
+      resize = resize > buffer_.size() * 2 ? resize : buffer_.size() * 2;
+      resize = resize > MaxLength_ ? resize : MaxLength_;
+      buffer_.resize(resize);
+      if (buffer_.size() == MaxLength_ && writeOffset_ != 0) {
+        moveToBegin();
+      }
+    } else if (writableBytes() == len) {
       if (buffer_.size() < MaxLength_) {
         buffer_.resize(buffer_.size() * 2 > MaxLength_ ? buffer_.size() * 2 : MaxLength_);
       } else if (buffer_.size() == MaxLength_ && writeOffset_ != 0) {

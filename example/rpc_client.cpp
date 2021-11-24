@@ -22,7 +22,7 @@ void onMessage(const TcpConnectionPtr &conn) {
       spdlog::error("increase err {},{}", data2->increaseNum, IncreaseNum);
     }
     // spdlog::debug("increase {},{}", data2->increaseNum, IncreaseNum);
-    conn->send(data2, RpcDataLen);
+    conn->send((char *)data2, RpcDataLen);
     buffer->retrieve(RpcDataLen);
   }
 }
@@ -50,7 +50,7 @@ int main(int argc, char const *argv[]) {
     TcpClient *tc = new TcpClient(eventLoop, ip, port, blockSize);
     tc->setMessageCallback(onMessage);
 
-    tc->send(&rd, sizeof(rd));
+    tc->send((char *)&rd, sizeof(rd));
   }
   spdlog::info("connection ok");
 

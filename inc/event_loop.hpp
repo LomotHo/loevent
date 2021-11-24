@@ -79,8 +79,16 @@ IoEventPtr EventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {
   spdlog::debug("createIoEvent fd: {}", fd);
 
   // 是否已存在ioEvent
-  if (ioEventMap_.find(fd) == ioEventMap_.end()) {
-    ioEventMap_[fd] = std::make_shared<IoEvent>();
+  // auto ioEvent = ioEventMap_.insert_or_assign(
+  //     IoEventMap::value_type(fd, std::make_shared<IoEvent>()));
+
+  IoEventPtr ioEvent;
+  auto it = ioEventMap_.find(fd);
+  if (it == ioEventMap_.end()) {
+    ioEvent = std::make_shared<IoEvent>();
+    ioEventMap_[fd] = ioEvent;
+  } else {
+    ioEvent = it->second;
   }
 
   struct epoll_event ev;
@@ -91,12 +99,12 @@ IoEventPtr EventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {
     // ev.events = EPOLLIN;
     spdlog::debug("createIoEvent setReadCallback fd: {}", fd);
 
-    ioEventMap_[fd]->setReadCallback(cb);
+    ioEvent->setReadCallback(cb);
   } else if (mask & POLLOUT) {
     // ev.events = EPOLLOUT | EPOLLET;
     // ev.events = EPOLLOUT;
     spdlog::debug("createIoEvent setWriteCallback fd: {}", fd);
-    ioEventMap_[fd]->setWriteCallback(cb);
+    ioEvent->setWriteCallback(cb);
   }
   ev.data.fd = fd;
   // if (ioEventMap_.find(fd) == ioEventMap_.end()) {
@@ -105,7 +113,7 @@ IoEventPtr EventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {
     printf("errno: %d\n", errno);
     error_quit("Error adding new event to epoll..");
   }
-  return ioEventMap_[fd];
+  return ioEvent;
 }
 
 }  // namespace loevent
