@@ -78,10 +78,6 @@ void EventLoop::closeIoEvent(int fd) {
 IoEventPtr EventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {
   spdlog::debug("createIoEvent fd: {}", fd);
 
-  // 是否已存在ioEvent
-  // auto ioEvent = ioEventMap_.insert_or_assign(
-  //     IoEventMap::value_type(fd, std::make_shared<IoEvent>()));
-
   IoEventPtr ioEvent;
   auto it = ioEventMap_.find(fd);
   if (it == ioEventMap_.end()) {
@@ -95,14 +91,9 @@ IoEventPtr EventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {
   ev.events = mask;
 
   if (mask & POLLIN) {
-    // ev.events = EPOLLIN | EPOLLET;
-    // ev.events = EPOLLIN;
     spdlog::debug("createIoEvent setReadCallback fd: {}", fd);
-
     ioEvent->setReadCallback(cb);
   } else if (mask & POLLOUT) {
-    // ev.events = EPOLLOUT | EPOLLET;
-    // ev.events = EPOLLOUT;
     spdlog::debug("createIoEvent setWriteCallback fd: {}", fd);
     ioEvent->setWriteCallback(cb);
   }
