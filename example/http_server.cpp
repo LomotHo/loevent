@@ -30,12 +30,13 @@ void onRequest(const HttpRequest &req, HttpResponse *res) {
 using namespace loevent;
 int main(int argc, const char **argv) {
   // spdlog::set_level(spdlog::level::debug);
-  if (argc < 2) {
-    error_quit("Example: ./server [port]");
+  if (argc < 3) {
+    error_quit("Example: ./server [port] [threadNum]");
   }
   int port = strtol(argv[1], NULL, 10);
+  int threadNum = strtol(argv[2], NULL, 10);
 
-  EventLoop eventLoop(20480);
+  EventLoop eventLoop(threadNum, 20480);
   HttpServer httpServer(eventLoop, port);
   httpServer.setHttpCallback(onRequest);
   eventLoop.loop();
