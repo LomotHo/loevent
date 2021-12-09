@@ -36,6 +36,7 @@ class TcpServer {
       : name_(name), loop_(loop), maxMessageLen_(maxMessageLen) {
     accepter_ = new Accepter(port);
     int listenfd = accepter_->getFd();
+    spdlog::debug("listenfd: {}", listenfd);
     loop_.createIoEvent(listenfd, std::bind(&TcpServer::onAceptEvent, this, listenfd),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP);
   }
@@ -49,7 +50,9 @@ class TcpServer {
   void onAceptEvent(int listenfd) {
     while (true) {
       int sockfd = accepter_->doAccept();
+      spdlog::info("doAccept {}", sockfd);
       if (sockfd == -1) {
+        // spdlog::info("doAccept {}", sockfd);
         return;
       }
       fcntl(sockfd, F_SETFL, O_NONBLOCK);

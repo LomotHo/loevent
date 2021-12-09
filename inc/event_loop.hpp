@@ -6,11 +6,10 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
+#include <shared_mutex>
+#include <string>
 #include <thread>
 #include <unordered_map>
-
-// #include <map>
-#include <string>
 
 #include "io_event.hpp"
 #include "utils.hpp"
@@ -19,10 +18,36 @@ namespace loevent {
 
 typedef std::shared_ptr<IoEvent> IoEventPtr;
 // typedef std::unordered_map<int, IoEventPtr> IoEventMap;
-typedef struct IoEventMap {
+// typedef struct IoEventMap {
+//   std::unordered_map<int, IoEventPtr> map_;
+//   std::mutex mtx;
+// } IoEventMap;
+
+class IoEventMap {
+ public:
+  IoEventMap(){};
+  void put(const int &key, IoEventPtr value) {
+    std::lock_guard lock(mtx_);
+    map_.emplace(key, value);
+  }
+
+  std::optional<IoEventPtr> get(const int &key) {
+    std::shared_lock lock(mtx_);
+    auto it = map_.find(key);
+    if (it != map_.end()) return it->second;
+    return {};
+  }
+
+  bool remove(const int &key) {
+    std::lock_guard lock(mtx_);
+    auto n = map_.erase(key);
+    return n;
+  }
+
+ private:
   std::unordered_map<int, IoEventPtr> map_;
-  std::mutex mtx;
-} IoEventMap;
+  std::shared_mutex mtx_;
+};
 
 class SingleEventLoop {
  private:
@@ -65,24 +90,12 @@ void SingleEventLoop::loop() {
       int sockfd = tmpEvents_[i].data.fd;
       if (tmpEvents_[i].events & EPOLLIN) {
         spdlog::debug("fd {} readable", sockfd);
-        if (inThisLoop(sockfd)) {
-          ioEventMap_.map_[sockfd]->readCallback();
-        } else {
-          ioEventMap_.mtx.lock();
-          ioEventMap_.map_[sockfd]->readCallback();
-          ioEventMap_.mtx.unlock();
-        }
+        ioEventMap_.get(sockfd).value()->readCallback();
         // spdlog::debug("fd {} readCallback finished", sockfd);
       }
       if (tmpEvents_[i].events & EPOLLOUT) {
         spdlog::debug("fd {} writeable", sockfd);
-        if (inThisLoop(sockfd)) {
-          ioEventMap_.map_[sockfd]->writeCallback();
-        } else {
-          ioEventMap_.mtx.lock();
-          ioEventMap_.map_[sockfd]->writeCallback();
-          ioEventMap_.mtx.unlock();
-        }
+        ioEventMap_.get(sockfd).value()->readCallback();
       }
       // ioEventMap_[sockfd] = std::make_shared<IoEvent>();
     }
@@ -93,49 +106,19 @@ void SingleEventLoop::closeIoEvent(int fd) {
   epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
   shutdown(fd, SHUT_RDWR);
   close(fd);
-  if (inThisLoop(fd)) {
-    ioEventMap_.map_.erase(fd);
-  } else {
-    ioEventMap_.mtx.lock();
-    ioEventMap_.map_.erase(fd);
-    ioEventMap_.mtx.unlock();
-  }
+  ioEventMap_.remove(fd);
 };
 
 IoEventPtr SingleEventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {
   spdlog::debug("createIoEvent fd: {}", fd);
 
   IoEventPtr ioEvent;
-  // auto it = ioEventMap_.find(fd);
-  // if (it == ioEventMap_.end()) {
-  //   ioEvent = std::make_shared<IoEvent>();
-  //   ioEventMap_[fd] = ioEvent;
-  // } else {
-  //   ioEvent = it->second;
-  // }
-  using mapItType = decltype(ioEventMap_.map_.end());
-  mapItType pos;
-  mapItType end;
-  if (inThisLoop(fd)) {
-    pos = ioEventMap_.map_.find(fd);
-    end = ioEventMap_.map_.end();
+  auto optIoEvent = ioEventMap_.get(fd);
+  if (optIoEvent) {
+    ioEvent = optIoEvent.value();
   } else {
-    ioEventMap_.mtx.lock();
-    pos = ioEventMap_.map_.find(fd);
-    end = ioEventMap_.map_.end();
-    ioEventMap_.mtx.unlock();
-  }
-  if (pos == end) {
     ioEvent = std::make_shared<IoEvent>();
-    if (inThisLoop(fd)) {
-      ioEventMap_.map_[fd] = ioEvent;
-    } else {
-      ioEventMap_.mtx.lock();
-      ioEventMap_.map_[fd] = ioEvent;
-      ioEventMap_.mtx.unlock();
-    }
-  } else {
-    ioEvent = pos->second;
+    ioEventMap_.put(fd, ioEvent);
   }
 
   struct epoll_event ev;
