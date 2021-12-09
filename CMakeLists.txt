@@ -20,9 +20,6 @@ find_package(spdlog REQUIRED)
 # include_directories("${PROJECT_SOURCE_DIR}/inc")
 # ADD_LIBRARY(loevent STATIC ${LOEVENT_SRC})
 
-add_executable(pp_client example/pp_client.cpp)
-target_link_libraries(pp_client spdlog::spdlog)
-
 add_executable(echo_server example/echo_server.cpp)
 target_link_libraries(echo_server spdlog::spdlog)
 
@@ -37,11 +34,3 @@ target_link_libraries(cmd_client)
 
 add_executable(demo example/demo.cpp)
 target_link_libraries(demo spdlog::spdlog)
-
-add_executable(test example/test.cpp)
-target_link_libraries(test spdlog::spdlog)
-
-add_executable(rpc_server example/rpc_server.cpp)
-target_link_libraries(rpc_server spdlog::spdlog)
-add_executable(rpc_client example/rpc_client.cpp)
-target_link_libraries(rpc_client spdlog::spdlog)

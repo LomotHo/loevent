@@ -26,9 +26,12 @@ class EventLoop {
   IoEventMap ioEventMap_;
   int epollfd_;
   struct epoll_event *tmpEvents_;
+  int threadNum_;
+  int id_;
+  bool inThisLoop(int fd) { return fd % threadNum_ == id_; }
 
  public:
-  EventLoop(int maxEventNum);
+  EventLoop(int maxEventNum, int threadNum, int loopId);
   ~EventLoop() { delete tmpEvents_; };
   void loop();
   IoEventPtr createIoEvent(int fd, EventCallback cb, uint32_t mask);
@@ -36,7 +39,8 @@ class EventLoop {
   // void addEvent();
 };
 
-EventLoop::EventLoop(int maxEventNum) : maxEventNum_(maxEventNum) {
+EventLoop::EventLoop(int maxEventNum, int threadNum, int loopId)
+    : maxEventNum_(maxEventNum), threadNum_(threadNum), id_(loopId) {
   tmpEvents_ = new struct epoll_event[maxEventNum];
   if ((epollfd_ = epoll_create(maxEventNum_)) < 0) {
     error_quit("Error creating epoll...");
