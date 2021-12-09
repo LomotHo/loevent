@@ -1,9 +1,16 @@
+// #include <cstddef>
+#include <cstdint>
+
 #include "event_loop.hpp"
 #include "spdlog/spdlog.h"
 #include "tcp_server.hpp"
 #include "utils.hpp"
 
 using namespace loevent;
+
+struct RpcData {
+  std::uint64_t increaseNum;
+};
 
 void onConnection(const TcpConnectionPtr &conn) {
   // spdlog::debug("[onConnection] fd: {}", conn->getFd());
@@ -16,12 +23,14 @@ void onConnection(const TcpConnectionPtr &conn) {
 void onMessage(const TcpConnectionPtr &conn) {
   auto buffer = conn->getRecvBuffer();
   int rb = buffer->readableBytes();
-
-  // spdlog::info("[onMessage] recv len: {}", rb);
-  // printHexDump(buffer->start(), rb);
-
-  conn->send(buffer->start(), rb);
-  buffer->retrieve(rb);
+  int RpcDataLen = sizeof(RpcData);
+  if (rb >= RpcDataLen) {
+    auto data = static_cast<void *>(buffer->start());
+    auto data2 = static_cast<RpcData *>(data);
+    data2->increaseNum++;
+    conn->send((char *)data2, RpcDataLen);
+    buffer->retrieve(RpcDataLen);
+  }
 }
 
 int main(int argc, char const *argv[]) {
@@ -34,6 +43,7 @@ int main(int argc, char const *argv[]) {
   EventLoop eventLoop(20480);
   spdlog::info("server running...");
   TcpServer tcpServer(eventLoop, port, "s233", 4096);
+
   tcpServer.setConnectionCallback(onConnection);
   tcpServer.setMessageCallback(onMessage);
   eventLoop.loop();

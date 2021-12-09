@@ -4,16 +4,27 @@
 #include "utils.hpp"
 
 using namespace loevent;
+int IncreaseNum = 0;
+struct RpcData {
+  std::uint64_t increaseNum;
+};
 
 void onMessage(const TcpConnectionPtr &conn) {
-  // spdlog::info("[onMessage] recv len: {}", len);
-  // printHexDump(buf, len);
-  // std::string str("hello");
-  // conn->send(str);
   auto buffer = conn->getRecvBuffer();
   int rb = buffer->readableBytes();
-  conn->send(buffer->start(), rb);
-  buffer->retrieve(rb);
+  int RpcDataLen = sizeof(RpcData);
+  if (rb >= RpcDataLen) {
+    auto data = static_cast<void *>(buffer->start());
+    auto data2 = static_cast<RpcData *>(data);
+    IncreaseNum += 2;
+    data2->increaseNum++;
+    if (data2->increaseNum != IncreaseNum) {
+      spdlog::error("increase err {},{}", data2->increaseNum, IncreaseNum);
+    }
+    // spdlog::debug("increase {},{}", data2->increaseNum, IncreaseNum);
+    conn->send((char *)data2, RpcDataLen);
+    buffer->retrieve(RpcDataLen);
+  }
 }
 
 int main(int argc, char const *argv[]) {
@@ -27,19 +38,19 @@ int main(int argc, char const *argv[]) {
   int blockSize = atoi(argv[4]);
 
   EventLoop eventLoop(20480);
-  // TcpClient tcpClient(eventLoop, ip, port, 4096);
-  // tcpClient.setMessageCallback(onMessage);
 
-  std::string message;
-  for (int i = 0; i < blockSize; ++i) {
-    message.push_back(static_cast<char>(i % 128));
-  }
-
+  // std::string message;
+  // for (int i = 0; i < blockSize; ++i) {
+  //   message.push_back(static_cast<char>(i % 128));
+  // }
+  RpcData rd;
+  rd.increaseNum = 0;
   for (int i = 0; i < sessionCount; ++i) {
     // spdlog::info("client running...");
     TcpClient *tc = new TcpClient(eventLoop, ip, port, blockSize);
     tc->setMessageCallback(onMessage);
-    tc->send(message);
+
+    tc->send((char *)&rd, sizeof(rd));
   }
   spdlog::info("connection ok");
 
