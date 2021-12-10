@@ -28,6 +28,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     // sendBuffePtr_ = std::make_shared<Buffer>(bufferSize);
     sendBuffePtr_ = std::make_shared<Buffer>(4, 8);
   }
+  ~TcpConnection() { spdlog::debug("connection destoried, fd: {}", getFd()); }
 
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
   void setCloseCallback(const MessageCallback &cb) { closeCallback_ = cb; }
@@ -86,12 +87,10 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
 
   int getFd() { return socket_.getFd(); }
   std::string getName() { return connName_; }
-  ~TcpConnection() { spdlog::debug("connection destoried, fd: {}", getFd()); }
   BufferPtr getRecvBuffer() { return recvBuffePtr_; }
   void setContext(const IoContextPtr &context) { context_ = context; }
   IoContextPtr getContext() { return context_; }
   void closeConnection() {
-    // FIX: need lock
     if (closeCallback_) {
       closeCallback_(shared_from_this());
     }
@@ -138,7 +137,6 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   }
 
  private:
-  // IoEvent &ioEvent_;
   Socket socket_;
   BufferPtr recvBuffePtr_;
   BufferPtr sendBuffePtr_;

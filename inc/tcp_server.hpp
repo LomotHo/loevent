@@ -37,22 +37,22 @@ class TcpServer {
     accepter_ = new Accepter(port);
     int listenfd = accepter_->getFd();
     spdlog::debug("listenfd: {}", listenfd);
-    loop_.createIoEvent(listenfd, std::bind(&TcpServer::onAceptEvent, this, listenfd),
+    loop_.createIoEvent(listenfd, std::bind(&TcpServer::onAcceptEvent, this, listenfd),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP);
   }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
   void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }
+
   // void closeConnection(int sockfd) {
   //   // FIX: need lock
   //   tcpConnections_.erase(sockfd);
   //   loop_.closeIoEvent(sockfd);
   // }
-  void onAceptEvent(int listenfd) {
+  void onAcceptEvent(int listenfd) {
     while (true) {
       int sockfd = accepter_->doAccept();
       spdlog::info("doAccept {}", sockfd);
       if (sockfd == -1) {
-        // spdlog::info("doAccept {}", sockfd);
         return;
       }
       fcntl(sockfd, F_SETFL, O_NONBLOCK);
@@ -68,14 +68,10 @@ class TcpServer {
     std::string connName = name_ + buf;
     auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd, maxMessageLen_);
     conn->setMessageCallback(messageCallback_);
-    conn->setCloseCallback([this](const TcpConnectionPtr conn) {
-      // int sockfd = conn->getFd();
-      tcpConnections_.erase(conn->getFd());
-    });
-
+    conn->setCloseCallback(
+        [this](const TcpConnectionPtr conn) { tcpConnections_.erase(conn->getFd()); });
     loop_.createIoEvent(sockfd, std::bind(&TcpConnection::onRecv, conn, sockfd, conn),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
-
     tcpConnections_[sockfd] = conn;
     if (connectionCallback_) {
       connectionCallback_(conn);

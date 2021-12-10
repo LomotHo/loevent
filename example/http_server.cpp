@@ -1,7 +1,5 @@
 #include "http/http_server.hpp"
 
-#include "event_loop.hpp"
-
 using namespace loevent;
 
 void onRequest(const HttpRequest &req, HttpResponse *res) {

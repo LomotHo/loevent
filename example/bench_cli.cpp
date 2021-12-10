@@ -1,7 +1,5 @@
-#include "event_loop.hpp"
 #include "spdlog/spdlog.h"
 #include "tcp_client.hpp"
-#include "utils.hpp"
 
 using namespace loevent;
 

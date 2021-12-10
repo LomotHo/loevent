@@ -32,6 +32,3 @@ target_link_libraries(bench_cli spdlog::spdlog)
 
 add_executable(cmd_client example/cmd_client.cpp)
 target_link_libraries(cmd_client)
-
-add_executable(demo example/demo.cpp)
-target_link_libraries(demo spdlog::spdlog)

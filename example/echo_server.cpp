@@ -1,7 +1,5 @@
-#include "event_loop.hpp"
 #include "spdlog/spdlog.h"
 #include "tcp_server.hpp"
-#include "utils.hpp"
 
 using namespace loevent;
 
@@ -16,10 +14,8 @@ void onConnection(const TcpConnectionPtr &conn) {
 void onMessage(const TcpConnectionPtr &conn) {
   auto buffer = conn->getRecvBuffer();
   int rb = buffer->readableBytes();
-
   // spdlog::info("[onMessage] recv len: {}", rb);
   // printHexDump(buffer->start(), rb);
-
   conn->send(buffer->start(), rb);
   buffer->retrieve(rb);
 }
