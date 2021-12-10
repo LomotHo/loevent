@@ -73,7 +73,9 @@ class SingleEventLoop {
     delete tmpEvents_;
     delete ioEventMap_;
   };
-  void debugPrinfInfo() { spdlog::info("size: {}", ioEventMap_->size()); }
+  void debugPrinfInfo() {
+    spdlog::info("EventLoop{} size: {}", id_, ioEventMap_->size());
+  }
   void loop();
   IoEventPtr createIoEvent(int fd, EventCallback cb, uint32_t mask);
   void closeIoEvent(int fd);
@@ -90,7 +92,7 @@ SingleEventLoop::SingleEventLoop(int maxEventNum, int threadNum, int loopId)
 }
 
 void SingleEventLoop::loop() {
-  spdlog::info("EventLoop {} loop", id_);
+  spdlog::info("EventLoop{} running...", id_);
   for (;;) {
     int newEventNum = epoll_wait(epollfd_, tmpEvents_, maxEventNum_, -1);
     if (newEventNum == -1) {

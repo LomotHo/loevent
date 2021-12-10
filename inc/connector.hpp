@@ -25,8 +25,7 @@ class Connector {
     inet_pton(AF_INET, ip, &servaddr_.sin_addr);
   }
   int doConnect() {
-    int n;
-    n = connect(sockfd_, (struct sockaddr *)&servaddr_, sizeof(servaddr_));
+    int n = connect(sockfd_, (struct sockaddr *)&servaddr_, sizeof(servaddr_));
     if (n < 0) {
       perror("connect");
     }
