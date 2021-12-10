@@ -27,7 +27,7 @@ int main(int argc, char const *argv[]) {
   int blockSize = atoi(argv[4]);
   int threadNum = atoi(argv[5]);
 
-  EventLoop eventLoop(20480, threadNum, 0);
+  EventLoop eventLoop(20480, threadNum);
   // TcpClient tcpClient(eventLoop, ip, port, 4096);
   // tcpClient.setMessageCallback(onMessage);
 

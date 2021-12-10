@@ -36,7 +36,7 @@ int main(int argc, const char **argv) {
   int port = strtol(argv[1], NULL, 10);
   int threadNum = strtol(argv[2], NULL, 10);
 
-  EventLoop eventLoop(20480, threadNum, 0);
+  EventLoop eventLoop(20480, threadNum);
   HttpServer httpServer(eventLoop, port);
   httpServer.setHttpCallback(onRequest);
   eventLoop.loop();
