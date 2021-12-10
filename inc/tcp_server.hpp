@@ -37,8 +37,9 @@ class TcpServer {
     accepter_ = new Accepter(port);
     int listenfd = accepter_->getFd();
     spdlog::debug("listenfd: {}", listenfd);
-    loop_.createIoEvent(listenfd, std::bind(&TcpServer::onAcceptEvent, this, listenfd),
-                        POLLIN | POLLRDHUP | POLLERR | POLLHUP);
+    loop_.createListenEvent(listenfd,
+                            std::bind(&TcpServer::onAcceptEvent, this, listenfd),
+                            POLLIN | POLLRDHUP | POLLERR | POLLHUP);
   }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
   void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }
@@ -51,7 +52,10 @@ class TcpServer {
   void onAcceptEvent(int listenfd) {
     while (true) {
       int sockfd = accepter_->doAccept();
-      spdlog::info("doAccept {}", sockfd);
+      // spdlog::info("doAccept {}", sockfd);
+      if (sockfd % 200 == 0) {
+        loop_.debugPrinfInfo();
+      }
       if (sockfd == -1) {
         return;
       }
