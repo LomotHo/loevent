@@ -117,15 +117,16 @@ void SingleEventLoop::loop() {
 }
 
 void SingleEventLoop::closeIoEvent(int fd) {
+  // should delete ioEvent frist
+  ioEventMap_->remove(fd);
   epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
   shutdown(fd, SHUT_RDWR);
   close(fd);
-  ioEventMap_->remove(fd);
 };
 
 void SingleEventLoop::removeEventFromLoop(int fd) {
-  epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
   ioEventMap_->remove(fd);
+  epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
 };
 
 IoEventPtr SingleEventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mask) {

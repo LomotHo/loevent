@@ -39,13 +39,13 @@ class TcpServer {
   void onAcceptEvent(int listenfd) {
     while (true) {
       int sockfd = accepter_->doAccept();
-      // spdlog::info("doAccept {}", sockfd);
       if (sockfd == -1) {
         break;
       }
-      // if (sockfd % 200 == 0) {
-      //   loop_.debugPrinfInfo();
-      // }
+      if (sockfd % 200 == 0) {
+        spdlog::info("doAccept {}", sockfd);
+        loop_.debugPrinfInfo();
+      }
       newConnection(sockfd);
     }
   }

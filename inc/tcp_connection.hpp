@@ -122,9 +122,12 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
             spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
           }
         }
-        if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
+        if (n == 0 || (n == -1 && errno != EAGAIN && errno != EINTR)) {
           closeConnection();
         }
+        // if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
+        //   closeConnection();
+        // }
         break;
       }
     }
