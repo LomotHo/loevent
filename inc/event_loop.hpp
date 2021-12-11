@@ -94,6 +94,9 @@ SingleEventLoop::SingleEventLoop(int maxEventNum, int threadNum, int loopId)
 
 void SingleEventLoop::loop() {
   spdlog::info("EventLoop{} running...", id_);
+  IoEventPtr defaultIoEvent = std::make_shared<IoEvent>();
+  defaultIoEvent->setReadCallback([]() { spdlog::error("no ReadCallback"); });
+  defaultIoEvent->setWriteCallback([]() { spdlog::error("no WriteCallback"); });
   for (;;) {
     int newEventNum = epoll_wait(epollfd_, tmpEvents_, maxEventNum_, -1);
     if (newEventNum == -1) {
@@ -103,11 +106,11 @@ void SingleEventLoop::loop() {
       int sockfd = tmpEvents_[i].data.fd;
       if (tmpEvents_[i].events & EPOLLIN) {
         spdlog::debug("fd {} readable", sockfd);
-        ioEventMap_->get(sockfd).value()->readCallback();
+        ioEventMap_->get(sockfd).value_or(defaultIoEvent)->readCallback();
       }
       if (tmpEvents_[i].events & EPOLLOUT) {
         spdlog::debug("fd {} writeable", sockfd);
-        ioEventMap_->get(sockfd).value()->writeCallback();
+        ioEventMap_->get(sockfd).value_or(defaultIoEvent)->writeCallback();
       }
     }
   }
@@ -150,7 +153,7 @@ IoEventPtr SingleEventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mas
   ev.data.fd = fd;
   if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &ev) == -1) {
     // error_quit("Error adding new event to epoll..");
-    spdlog::error("Error adding new event to epoll, errno:{}", errno);
+    spdlog::error("Error adding new event to epoll, errno:{}, fd: {}", errno, fd);
   }
   return ioEvent;
 }

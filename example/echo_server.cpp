@@ -6,9 +6,9 @@ using namespace loevent;
 void onConnection(const TcpConnectionPtr &conn) {
   // spdlog::debug("[onConnection] fd: {}", conn->getFd());
   int fd = conn->getFd();
-  if (fd % 200 == 0) {
-    spdlog::info("[onConnection] fd: {}", fd);
-  }
+  // if (fd % 200 == 0) {
+  //   spdlog::info("[onConnection] fd: {}", fd);
+  // }
 }
 
 void onMessage(const TcpConnectionPtr &conn) {

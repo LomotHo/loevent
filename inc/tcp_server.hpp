@@ -20,12 +20,16 @@ namespace loevent {
 
 class TcpServer {
  public:
-  ~TcpServer() { delete accepter_; }
+  ~TcpServer() {
+    delete accepter_;
+    delete tcpConnections_;
+  }
   TcpServer(EventLoop &loop, int port, std::string name, int maxMessageLen)
       : name_(name), loop_(loop), maxMessageLen_(maxMessageLen) {
     accepter_ = new Accepter(port);
     int listenfd = accepter_->getFd();
     spdlog::debug("listenfd: {}", listenfd);
+    tcpConnections_ = new ConnectionMap(true);
     loop_.createMainEvent(listenfd, std::bind(&TcpServer::onAcceptEvent, this, listenfd),
                           POLLIN | POLLRDHUP | POLLERR | POLLHUP);
   }
@@ -36,13 +40,12 @@ class TcpServer {
     while (true) {
       int sockfd = accepter_->doAccept();
       // spdlog::info("doAccept {}", sockfd);
-      if (sockfd % 200 == 0) {
-        loop_.debugPrinfInfo();
-      }
       if (sockfd == -1) {
-        return;
+        break;
       }
-      fcntl(sockfd, F_SETFL, O_NONBLOCK);
+      // if (sockfd % 200 == 0) {
+      //   loop_.debugPrinfInfo();
+      // }
       newConnection(sockfd);
     }
   }
@@ -59,11 +62,11 @@ class TcpServer {
       // conn->setConnectionCallback(connectionCallback_);
       connectionCallback_(conn);
     }
-    conn->setCloseCallback(
-        [this](const TcpConnectionPtr conn) { tcpConnections_.erase(conn->getFd()); });
     loop_.createIoEvent(sockfd, std::bind(&TcpConnection::onRecv, conn, sockfd, conn),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
-    tcpConnections_[sockfd] = conn;
+    conn->setCloseCallback(
+        [this](const TcpConnectionPtr conn) { tcpConnections_->remove(conn->getFd()); });
+    tcpConnections_->put(sockfd, conn);
     return conn;
   }
 
@@ -71,7 +74,7 @@ class TcpServer {
   EventLoop &loop_;
   MessageCallback messageCallback_;
   ConnectionCallback connectionCallback_;
-  ConnectionMap tcpConnections_;
+  ConnectionMap *tcpConnections_;
   Accepter *accepter_;
   int maxMessageLen_;
   std::string name_;

@@ -20,29 +20,43 @@ class TcpClient {
   }
 
   void run() {
-    loop_.createMainEvent(
-        sockfd_,
-        [this]() {
-          int sockfd = connector_->doConnect();
-          if (sockfd < 0) return;
-          loop_.removeMainEventFromLoop(sockfd);
-          char connName[64];
-          snprintf(connName, sizeof connName, "client-%d", sockfd);
-          conn_ =
-              std::make_shared<TcpConnection>(loop_, connName, sockfd, maxMessageLen_);
-          conn_->setMessageCallback(messageCallback_);
-          // conn_->setCloseCallback(
-          //     [this](const TcpConnectionPtr conn) { spdlog::debug("close connection");
-          //     });
-          loop_.createIoEvent(sockfd_,
-                              std::bind(&TcpConnection::onRecv, conn_, sockfd_, conn_),
-                              POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
-          if (connectionCallback_) {
-            // conn->setConnectionCallback(connectionCallback_);
-            connectionCallback_(conn_);
-          }
-        },
-        POLLOUT | POLLRDHUP | POLLERR | POLLHUP);
+    int n = connector_->doConnect();
+    if (n == 0) {
+      newConnection(sockfd_);
+    } else {
+      spdlog::debug("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), sockfd_, n);
+      loop_.createMainEvent(
+          sockfd_,
+          [this]() {
+            int n = connector_->doConnect();
+            if (n < 0) {
+              spdlog::debug("{}: {} | sockfd: {} | n: {}", errno, strerror(errno),
+                            sockfd_, n);
+              return;
+            }
+            loop_.removeMainEventFromLoop(sockfd_);
+            spdlog::debug("sockfd{} connected", sockfd_);
+            newConnection(sockfd_);
+          },
+          POLLOUT | POLLRDHUP | POLLERR | POLLHUP);
+    }
+  }
+
+  TcpConnectionPtr newConnection(int sockfd) {
+    char connName[64];
+    snprintf(connName, sizeof connName, "client-%d", sockfd);
+    conn_ = std::make_shared<TcpConnection>(loop_, connName, sockfd, maxMessageLen_);
+    conn_->setMessageCallback(messageCallback_);
+    // conn_->setCloseCallback(
+    //     [this](const TcpConnectionPtr conn) { spdlog::debug("close connection");
+    //     });
+    loop_.createIoEvent(sockfd_, std::bind(&TcpConnection::onRecv, conn_, sockfd_, conn_),
+                        POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
+    if (connectionCallback_) {
+      // conn->setConnectionCallback(connectionCallback_);
+      connectionCallback_(conn_);
+    }
+    return conn_;
   }
 
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }

@@ -19,7 +19,40 @@ typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 typedef std::function<void(const TcpConnectionPtr)> MessageCallback;
 typedef std::function<void(const TcpConnectionPtr)> ConnectionCallback;
 typedef std::function<void(const TcpConnectionPtr)> CloseCallback;
-typedef std::unordered_map<int, TcpConnectionPtr> ConnectionMap;
+
+class ConnectionMap {
+ public:
+  ConnectionMap(bool enableLock) : enableLock_(enableLock){};
+  void put(const int &key, TcpConnectionPtr value) {
+    // if (enableLock_) std::lock_guard lock(mtx_);
+    std::lock_guard lock(mtx_);
+    map_.emplace(key, value);
+  }
+  int size() {
+    // if (enableLock_) std::lock_guard lock(mtx_);
+    std::lock_guard lock(mtx_);
+    return map_.size();
+  }
+  std::optional<TcpConnectionPtr> get(const int &key) {
+    // if (enableLock_) std::shared_lock lock(mtx_);
+    std::lock_guard lock(mtx_);
+    auto it = map_.find(key);
+    if (it != map_.end()) return it->second;
+    return {};
+  }
+
+  bool remove(const int &key) {
+    // if (enableLock_) std::lock_guard lock(mtx_);
+    std::lock_guard lock(mtx_);
+    auto n = map_.erase(key);
+    return n;
+  }
+
+ private:
+  std::unordered_map<int, TcpConnectionPtr> map_;
+  std::shared_mutex mtx_;
+  bool enableLock_;
+};
 
 class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnection> {
  public:

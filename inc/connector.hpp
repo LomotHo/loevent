@@ -2,7 +2,7 @@
 #define __LOEVENT_CONNECTOR__
 
 #include <arpa/inet.h>
-#include <fcntl.h>
+// #include <fcntl.h>
 #include <netinet/in.h>
 #include <spdlog/spdlog.h>
 
@@ -16,12 +16,12 @@ class Connector {
  public:
   ~Connector() {}
   Connector(const char *ip, int port) {
-    sockfd_ = socket(AF_INET, SOCK_STREAM, 0);
+    sockfd_ = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (sockfd_ < 0) {
       spdlog::error("[socket] {}: {} | sockfd: {}", errno, strerror(errno), sockfd_);
       return;
     }
-    fcntl(sockfd_, F_SETFL, O_NONBLOCK);
+    // fcntl(sockfd_, F_SETFL, O_NONBLOCK);
     bzero(&servaddr_, sizeof(servaddr_));
     servaddr_.sin_family = AF_INET;
     servaddr_.sin_port = htons(port);
@@ -29,11 +29,7 @@ class Connector {
   }
 
   int doConnect() {
-    if (connect(sockfd_, (struct sockaddr *)&servaddr_, sizeof(servaddr_)) < 0) {
-      // spdlog::error("[connect] {}: {} | sockfd: {}", errno, strerror(errno), sockfd_);
-      return -1;
-    }
-    return sockfd_;
+    return connect(sockfd_, (struct sockaddr *)&servaddr_, sizeof(servaddr_));
   }
   int getFd() { return sockfd_; }
 
