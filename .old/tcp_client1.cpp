@@ -13,9 +13,12 @@ namespace loevent {
 class TcpClient {
  public:
   ~TcpClient() { delete connector_; }
-  TcpClient(EventLoop &loop, const char *ip, int port, int maxMessageLen)
+  TcpClient(EventLoop &loop, const char *ip, const int port, int maxMessageLen)
       : loop_(loop), maxMessageLen_(maxMessageLen) {
     connector_ = new Connector(ip, port);
+    conn->setCloseCallback(
+        [this](const TcpConnectionPtr conn) { tcpConnections_.erase(conn->getFd()); });
+
     connector_->doConnect();
     sockfd_ = connector_->getFd();
     char connName[64];
@@ -32,17 +35,33 @@ class TcpClient {
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
   }
   // void setConnectedCallback(){};
-  void send(std::string msg) { conn_->send(msg); }
-  void send(char *msg, int len) { conn_->send(msg, len); }
+  // void send(std::string msg) { conn_->send(msg); }
+  // void send(char *msg, int len) { conn_->send(msg, len); }
   void closeConnection(int fd) { conn_->closeConnection(); }
 
+  void newConnection(const char *ip, const int port) {
+    Connector connector(ip, port);
+    int sockfd = connector_->doConnect();
+    if (sockfd < 0) return;
+
+    char connName[64];
+    snprintf(connName, sizeof connName, "client-%d", sockfd);
+    auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd, maxMessageLen_);
+    conn->setMessageCallback(messageCallback_);
+  }
+
  private:
-  MessageCallback messageCallback_;
-  Connector *connector_;
   EventLoop &loop_;
-  TcpConnectionPtr conn_;
-  int sockfd_;
+  MessageCallback messageCallback_;
+  ConnectionCallback connectionCallback_;
+  ConnectionMap tcpConnections_;
+  Connector *connector_;
   int maxMessageLen_;
+  std::string name_;
+  int nextConnId_;
+
+  // TcpConnectionPtr conn_;
+  // int sockfd_;
 };
 
 }  // namespace loevent

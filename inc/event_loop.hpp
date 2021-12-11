@@ -78,6 +78,7 @@ class SingleEventLoop {
   }
   void loop();
   IoEventPtr createIoEvent(int fd, EventCallback cb, uint32_t mask);
+  void removeEventFromLoop(int fd);
   void closeIoEvent(int fd);
   // void addEvent();
 };
@@ -106,7 +107,7 @@ void SingleEventLoop::loop() {
       }
       if (tmpEvents_[i].events & EPOLLOUT) {
         spdlog::debug("fd {} writeable", sockfd);
-        ioEventMap_->get(sockfd).value()->readCallback();
+        ioEventMap_->get(sockfd).value()->writeCallback();
       }
     }
   }
@@ -116,6 +117,11 @@ void SingleEventLoop::closeIoEvent(int fd) {
   epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
   shutdown(fd, SHUT_RDWR);
   close(fd);
+  ioEventMap_->remove(fd);
+};
+
+void SingleEventLoop::removeEventFromLoop(int fd) {
+  epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
   ioEventMap_->remove(fd);
 };
 
@@ -143,11 +149,14 @@ IoEventPtr SingleEventLoop::createIoEvent(int fd, EventCallback cb, uint32_t mas
   }
   ev.data.fd = fd;
   if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &ev) == -1) {
-    printf("errno: %d\n", errno);
-    error_quit("Error adding new event to epoll..");
+    // error_quit("Error adding new event to epoll..");
+    spdlog::error("Error adding new event to epoll, errno:{}", errno);
   }
   return ioEvent;
 }
+
+// IoEventPtr SingleEventLoop::createReadEvent(int fd, EventCallback cb,) {
+// }
 
 class EventLoop {
  private:
@@ -187,11 +196,17 @@ class EventLoop {
   IoEventPtr createIoEvent(int fd, EventCallback cb, uint32_t mask) {
     return eventLoops_[fdToLoopId(fd)]->createIoEvent(fd, cb, mask);
   }
-  IoEventPtr createListenEvent(int fd, EventCallback cb, uint32_t mask) {
+  IoEventPtr createMainEvent(int fd, EventCallback cb, uint32_t mask) {
     return eventLoops_[threadNum_]->createIoEvent(fd, cb, mask);
   }
   void closeIoEvent(int fd) { eventLoops_[fdToLoopId(fd)]->closeIoEvent(fd); }
-  void closeListenEvent(int fd) { eventLoops_[threadNum_]->closeIoEvent(fd); }
+  void closeMainEvent(int fd) { eventLoops_[threadNum_]->closeIoEvent(fd); }
+  void removeEventFromLoop(int fd) {
+    eventLoops_[fdToLoopId(fd)]->removeEventFromLoop(fd);
+  };
+  void removeMainEventFromLoop(int fd) {
+    eventLoops_[threadNum_]->removeEventFromLoop(fd);
+  };
 };
 
 }  // namespace loevent

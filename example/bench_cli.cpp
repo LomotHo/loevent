@@ -34,11 +34,14 @@ int main(int argc, char const *argv[]) {
     message.push_back(static_cast<char>(i % 128));
   }
 
+  // spdlog::info("client running...");
   for (int i = 0; i < connectionNum; ++i) {
-    // spdlog::info("client running...");
     TcpClient *tc = new TcpClient(eventLoop, ip, port, blockSize);
     tc->setMessageCallback(onMessage);
-    tc->send(message);
+
+    tc->setConnectionCallback(
+        [message](const TcpConnectionPtr &conn) { conn->send(message); });
+    tc->run();
   }
   spdlog::info("connection ok");
 

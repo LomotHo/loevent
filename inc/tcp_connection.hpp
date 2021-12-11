@@ -19,6 +19,7 @@ typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 typedef std::function<void(const TcpConnectionPtr)> MessageCallback;
 typedef std::function<void(const TcpConnectionPtr)> ConnectionCallback;
 typedef std::function<void(const TcpConnectionPtr)> CloseCallback;
+typedef std::unordered_map<int, TcpConnectionPtr> ConnectionMap;
 
 class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnection> {
  public:

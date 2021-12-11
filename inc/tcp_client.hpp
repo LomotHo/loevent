@@ -16,33 +16,49 @@ class TcpClient {
   TcpClient(EventLoop &loop, const char *ip, int port, int maxMessageLen)
       : loop_(loop), maxMessageLen_(maxMessageLen) {
     connector_ = new Connector(ip, port);
-    connector_->doConnect();
     sockfd_ = connector_->getFd();
-    char connName[64];
-    snprintf(connName, sizeof connName, "client-%d", sockfd_);
-    conn_ = std::make_shared<TcpConnection>(loop_, connName, sockfd_, maxMessageLen);
-    // conn_->setCloseCallback(
-    //     [this](const TcpConnectionPtr conn) { spdlog::debug("close connection"); });
   }
 
-  void setMessageCallback(const MessageCallback &cb) {
-    messageCallback_ = cb;
-    conn_->setMessageCallback(messageCallback_);
-    loop_.createIoEvent(sockfd_, std::bind(&TcpConnection::onRecv, conn_, sockfd_, conn_),
-                        POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
+  void run() {
+    loop_.createMainEvent(
+        sockfd_,
+        [this]() {
+          int sockfd = connector_->doConnect();
+          if (sockfd < 0) return;
+          loop_.removeMainEventFromLoop(sockfd);
+          char connName[64];
+          snprintf(connName, sizeof connName, "client-%d", sockfd);
+          conn_ =
+              std::make_shared<TcpConnection>(loop_, connName, sockfd, maxMessageLen_);
+          conn_->setMessageCallback(messageCallback_);
+          // conn_->setCloseCallback(
+          //     [this](const TcpConnectionPtr conn) { spdlog::debug("close connection");
+          //     });
+          loop_.createIoEvent(sockfd_,
+                              std::bind(&TcpConnection::onRecv, conn_, sockfd_, conn_),
+                              POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
+          if (connectionCallback_) {
+            // conn->setConnectionCallback(connectionCallback_);
+            connectionCallback_(conn_);
+          }
+        },
+        POLLOUT | POLLRDHUP | POLLERR | POLLHUP);
   }
-  // void setConnectedCallback(){};
-  void send(std::string msg) { conn_->send(msg); }
-  void send(char *msg, int len) { conn_->send(msg, len); }
+
+  void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
+  void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }
   void closeConnection(int fd) { conn_->closeConnection(); }
+  // void send(std::string msg) { conn_->send(msg); }
+  // void send(char *msg, int len) { conn_->send(msg, len); }
 
  private:
-  MessageCallback messageCallback_;
-  Connector *connector_;
   EventLoop &loop_;
+  MessageCallback messageCallback_;
+  ConnectionCallback connectionCallback_;
+  int maxMessageLen_;
+  Connector *connector_;
   TcpConnectionPtr conn_;
   int sockfd_;
-  int maxMessageLen_;
 };
 
 }  // namespace loevent
