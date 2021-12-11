@@ -20,16 +20,6 @@ namespace loevent {
 typedef std::unordered_map<int, TcpConnectionPtr> ConnectionMap;
 
 class TcpServer {
- private:
-  MessageCallback messageCallback_;
-  ConnectionCallback connectionCallback_;
-  ConnectionMap tcpConnections_;
-  EventLoop &loop_;
-  Accepter *accepter_;
-  int maxMessageLen_;
-  int nextConnId_;
-  std::string name_;
-
  public:
   ~TcpServer() { delete accepter_; }
   TcpServer(EventLoop &loop, int port, std::string name, int maxMessageLen)
@@ -72,16 +62,27 @@ class TcpServer {
     std::string connName = name_ + buf;
     auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd, maxMessageLen_);
     conn->setMessageCallback(messageCallback_);
+    // conn->setConnectionCallback(connectionCallback_);
+    if (connectionCallback_) {
+      connectionCallback_(conn);
+    }
     conn->setCloseCallback(
         [this](const TcpConnectionPtr conn) { tcpConnections_.erase(conn->getFd()); });
     loop_.createIoEvent(sockfd, std::bind(&TcpConnection::onRecv, conn, sockfd, conn),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
     tcpConnections_[sockfd] = conn;
-    if (connectionCallback_) {
-      connectionCallback_(conn);
-    }
     return conn;
   }
+
+ private:
+  MessageCallback messageCallback_;
+  ConnectionCallback connectionCallback_;
+  ConnectionMap tcpConnections_;
+  EventLoop &loop_;
+  Accepter *accepter_;
+  int maxMessageLen_;
+  int nextConnId_;
+  std::string name_;
 };
 
 }  // namespace loevent
