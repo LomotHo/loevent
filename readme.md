@@ -8,7 +8,7 @@
 
 ### localhost
 
-![loevent-benchmark-tcp](https://github.com/LomotHo/loevent/raw/master/doc/asset/loevent-benchmark-tcp.png)
+![loevent-benchmark-tcp](doc/asset/loevent-benchmark-tcp.png)
 
 ## http benchmark
 
