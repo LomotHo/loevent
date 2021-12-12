@@ -50,7 +50,7 @@ class TcpClient {
     // conn_->setCloseCallback(
     //     [this](const TcpConnectionPtr conn) { spdlog::debug("close connection");
     //     });
-    loop_.createIoEvent(sockfd_, std::bind(&TcpConnection::onRecv, conn_, sockfd_, conn_),
+    loop_.createIoEvent(sockfd_, std::bind(&TcpConnection::onRecv, conn_, sockfd_),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
     if (connectionCallback_) {
       // conn->setConnectionCallback(connectionCallback_);

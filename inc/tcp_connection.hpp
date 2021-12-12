@@ -93,32 +93,25 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     }
     loop_.closeIoEvent(socket_.getFd());
   }
-  void onRecv(int fd, TcpConnectionPtr conn) {
-    // if (connectionBroken_) {
-    //   closeConnection();
-    //   return;
-    // }
-    auto buffer = conn->getRecvBuffer();
+  void onRecv(int fd) {
+    auto buffer = getRecvBuffer();
     while (true) {
-      if (conn->connectionIsBroken()) {
-        conn->closeConnection();
+      if (connectionIsBroken()) {
+        closeConnection();
         return;
       }
       int wb = buffer->writableBytes();
       if (wb == 0) {
         spdlog::info("write buffer full");
-        conn->closeConnection();
+        closeConnection();
         break;
       }
       int n = recv(fd, buffer->end(), wb, MSG_DONTWAIT);
       spdlog::debug("recv n: {} | writableBytes: {}", n, wb);
       if (n > 0) {
-        // if (!conn->getRecvBuffer()->write(recvBuf, n)) {
-        //   spdlog::error("write buffer error, fd: {}", fd);
-        // }
         buffer->manualWrite(n);
         if (messageCallback_) {
-          conn->messageCallback_(conn);
+          messageCallback_(shared_from_this());
           spdlog::debug("messageCallback_ done");
         }
         if (n < wb) {
@@ -135,14 +128,11 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
             spdlog::error("{}: {} | sockfd: {} | n: {}", errno, strerror(errno), fd, n);
           }
         }
+        // if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
         if (n == 0 || (n == -1 && errno != EAGAIN && errno != EINTR)) {
-          // connectionBroken_ = true;
-          conn->closeConnection();
+          closeConnection();
           return;
         }
-        // if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
-        //   closeConnection();
-        // }
         break;
       }
     }

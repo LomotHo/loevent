@@ -62,7 +62,7 @@ class TcpServer {
       // conn->setConnectionCallback(connectionCallback_);
       connectionCallback_(conn);
     }
-    loop_.createIoEvent(sockfd, std::bind(&TcpConnection::onRecv, conn, sockfd, conn),
+    loop_.createIoEvent(sockfd, std::bind(&TcpConnection::onRecv, conn, sockfd),
                         POLLIN | POLLRDHUP | POLLERR | POLLHUP | POLLET);
     conn->setCloseCallback(
         [this](const TcpConnectionPtr conn) { tcpConnections_->remove(conn->getFd()); });
