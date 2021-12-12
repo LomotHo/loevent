@@ -13,12 +13,12 @@ class Socket : noncopyable {
   int send(const void *buf, int len) {
     spdlog::debug("[socketSend] | len: {} | fd: {}", len, sockfd_);
     // printHexDump((char *)buf, len);
-    return ::send(sockfd_, buf, len, 0);
+    return ::send(sockfd_, buf, len, MSG_NOSIGNAL);
   }
   int nonBlockSend(const void *buf, int len) {
     spdlog::debug("[socketSend] | len: {} | fd: {}", len, sockfd_);
     // printHexDump((char *)buf, len);
-    return ::send(sockfd_, buf, len, MSG_DONTWAIT);
+    return ::send(sockfd_, buf, len, MSG_NOSIGNAL | MSG_DONTWAIT);
   }
   int getFd() { return sockfd_; }
 

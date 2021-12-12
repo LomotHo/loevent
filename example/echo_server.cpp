@@ -30,7 +30,7 @@ int main(int argc, char const *argv[]) {
 
   EventLoop eventLoop(20480, threadNum);
   spdlog::info("server running...");
-  TcpServer tcpServer(eventLoop, port, "s233", 4096);
+  TcpServer tcpServer(eventLoop, port, "s233");
   tcpServer.setConnectionCallback(onConnection);
   tcpServer.setMessageCallback(onMessage);
   eventLoop.loop();

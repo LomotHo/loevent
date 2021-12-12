@@ -40,71 +40,33 @@ class Buffer {
     writeOffset_ = 0;
   }
 
-  // bool manualWrite(size_t len) {
-  //   if (len <= writableBytes()) {
-  //     writeOffset_ += len;
-  //     return true;
-  //   }
-  //   if (writableBytes() < len && len < MaxLength_ - writeOffset_) {
-  //     int resize =
-  //         buffer_.size() + writableBytes() > len ? buffer_.size() * 2 : MaxLength_;
-  //     buffer_.resize(resize);
-  //   }
-  //   if (0) {
-  //     if (MaxLength_ - readableBytes() < len) {
-  //       spdlog::error("write too many once");
-  //       return false;
-  //     }
-  //     if (MaxLength_ < buffer_.size() + len) {
-  //     }
-  //     buffer_.resize(buffer_.size() * 2 > MaxLength_ ? buffer_.size() * 2 :
-  //     MaxLength_); if (writableBytes() < len) {
-  //       spdlog::error("buffer write out of range");
-  //       return false;
-  //     }
-  //     if (buffer_.size() == MaxLength_) {
-  //       moveToBegin();
-  //     }
-  //   }
-  // }
   bool manualWrite(size_t len) {
-    if (writableBytes() < len) {
-      spdlog::error("buffer error");
+    if (MaxLength_ < len + readOffset_) {
+      spdlog::error("write to buffer too much");
       return false;
-    }
-    if (writableBytes() == len) {
+    } else if (writableBytes() <= len) {
       if (buffer_.size() < MaxLength_) {
-        buffer_.resize(buffer_.size() * 2 > MaxLength_ ? buffer_.size() * 2 : MaxLength_);
-      } else if (buffer_.size() == MaxLength_ && writeOffset_ != 0) {
+        int resize = writeOffset_ + len;
+        resize = resize > buffer_.size() * 2 ? resize : buffer_.size() * 2;
+        resize = resize < MaxLength_ ? resize : MaxLength_;
+        buffer_.resize(resize);
+        // spdlog::debug("[debug] buffer resize: {} | size: {}", resize, buffer_.size());
+      }
+      if (writableBytes() <= len && writeOffset_ != 0) {
+        // spdlog::debug("[debug] buffer moveToBegin | size: {}", buffer_.size());
         moveToBegin();
       }
     }
     writeOffset_ += len;
     return true;
   }
-
   bool write(const char* buf, size_t len) {
-    if (MaxLength_ < len) {
-      spdlog::error("write to buffer too much");
+    if (manualWrite(len)) {
+      ::memcpy(end(), buf, len);
+      return true;
+    } else {
       return false;
-    } else if (writableBytes() < len) {
-      int resize = writeOffset_ + len;
-      resize = resize > buffer_.size() * 2 ? resize : buffer_.size() * 2;
-      resize = resize > MaxLength_ ? resize : MaxLength_;
-      buffer_.resize(resize);
-      if (buffer_.size() == MaxLength_ && writeOffset_ != 0) {
-        moveToBegin();
-      }
-    } else if (writableBytes() == len) {
-      if (buffer_.size() < MaxLength_) {
-        buffer_.resize(buffer_.size() * 2 > MaxLength_ ? buffer_.size() * 2 : MaxLength_);
-      } else if (buffer_.size() == MaxLength_ && writeOffset_ != 0) {
-        moveToBegin();
-      }
     }
-    ::memcpy(end(), buf, len);
-    writeOffset_ += len;
-    return true;
   }
 
   void append(const std::string& str) { write(str.c_str(), str.length()); }

@@ -59,14 +59,12 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   TcpConnection(EventLoop &loop, std::string connName, int sockfd, size_t bufferSize)
       : socket_(sockfd), connName_(connName), loop_(loop) {
     recvBuffePtr_ = std::make_shared<Buffer>(bufferSize);
-    // sendBuffePtr_ = std::make_shared<Buffer>(bufferSize);
-    sendBuffePtr_ = std::make_shared<Buffer>(4, 8);
-    // if (connectionCallback_) {
-    //   connectionCallback_(shared_from_this());
-    // }
+    sendBuffePtr_ = std::make_shared<Buffer>(bufferSize);
+    // recvBuffePtr_ = std::make_shared<Buffer>(4, 10);
+    // sendBuffePtr_ = std::make_shared<Buffer>(4, 10);
   }
   ~TcpConnection() { spdlog::debug("connection destoried, fd: {}", getFd()); }
-
+  bool connectionIsBroken() { return connectionBroken_; }
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
   void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }
   void setCloseCallback(const MessageCallback &cb) { closeCallback_ = cb; }
@@ -75,8 +73,13 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   int send(BufferPtr buf) { return send(buf->start(), buf->readableBytes()); }
 
   int send(const char *msg, int len) {
-    int fd = socket_.getFd();
-    return socket_.send(msg, len);
+    int n = socket_.send(msg, len);
+    if (n <= 0) {
+      connectionBroken_ = true;
+      // spdlog::debug("[conn send] {}: {} | sockfd: {} | n: {}", errno, strerror(errno),
+      //               socket_.getFd(), n);
+    }
+    return n;
   }
 
   int getFd() { return socket_.getFd(); }
@@ -91,12 +94,20 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     loop_.closeIoEvent(socket_.getFd());
   }
   void onRecv(int fd, TcpConnectionPtr conn) {
+    // if (connectionBroken_) {
+    //   closeConnection();
+    //   return;
+    // }
     auto buffer = conn->getRecvBuffer();
     while (true) {
+      if (conn->connectionIsBroken()) {
+        conn->closeConnection();
+        return;
+      }
       int wb = buffer->writableBytes();
       if (wb == 0) {
         spdlog::info("write buffer full");
-        closeConnection();
+        conn->closeConnection();
         break;
       }
       int n = recv(fd, buffer->end(), wb, MSG_DONTWAIT);
@@ -107,9 +118,11 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
         // }
         buffer->manualWrite(n);
         if (messageCallback_) {
-          messageCallback_(conn);
+          conn->messageCallback_(conn);
+          spdlog::debug("messageCallback_ done");
         }
         if (n < wb) {
+          spdlog::debug("no more data, break");
           break;
         }
       } else {
@@ -123,7 +136,9 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
           }
         }
         if (n == 0 || (n == -1 && errno != EAGAIN && errno != EINTR)) {
-          closeConnection();
+          // connectionBroken_ = true;
+          conn->closeConnection();
+          return;
         }
         // if (n != -1 || (errno != EAGAIN && errno != EINTR)) {
         //   closeConnection();
@@ -143,6 +158,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   MessageCallback messageCallback_;
   ConnectionCallback connectionCallback_;
   CloseCallback closeCallback_;
+  bool connectionBroken_ = false;
 };
 
 }  // namespace loevent

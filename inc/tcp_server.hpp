@@ -24,7 +24,7 @@ class TcpServer {
     delete accepter_;
     delete tcpConnections_;
   }
-  TcpServer(EventLoop &loop, int port, std::string name, int maxMessageLen)
+  TcpServer(EventLoop &loop, int port, std::string name, int maxMessageLen = 1024)
       : name_(name), loop_(loop), maxMessageLen_(maxMessageLen) {
     accepter_ = new Accepter(port);
     int listenfd = accepter_->getFd();
