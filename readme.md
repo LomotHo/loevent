@@ -6,15 +6,15 @@
 
 ## tcp benchmark
 
+### localhost
+
+![loevent-benchmark-tcp](https://github.com/LomotHo/loevent/raw/master/doc/asset/loevent-benchmark-tcp.png)
+
 ## http benchmark
 
 ```sh
 wrk -t4 -c1000 -d60s --latency "http://192.168.8.31:3000/api/v1/stream/?streamname=livestream1&edgename=edge240"
 ```
-
-### localhost
-
-
 
 ### localhost
 
