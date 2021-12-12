@@ -1,7 +1,6 @@
 #ifndef __LOEVENT_ACCEPTER__
 #define __LOEVENT_ACCEPTER__
 
-// #include <fcntl.h>
 #include <netinet/in.h>
 
 #include <cstring>
@@ -22,7 +21,6 @@ class Accepter {
     if ((listenfd_ = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) < 0) {
       error_quit("Error creating socket..");
     }
-    // fcntl(listenfd_, F_SETFL, O_NONBLOCK);
     int on = 1;
     setsockopt(listenfd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
     if (bind(listenfd_, (struct sockaddr *)&servaddr_, sizeof(servaddr_)) < 0) {
@@ -35,13 +33,6 @@ class Accepter {
   }
   int getFd() { return listenfd_; }
   inline int doAccept() {
-    // int sockfd =
-    //     accept4(listenfd_, (struct sockaddr *)&cliaddr_, &clilen_, SOCK_NONBLOCK);
-    // // accept(listenfd_, (struct sockaddr *)&cliaddr, &clilen);
-    // if (sockfd == -1) {
-    //   return -1;
-    // }
-    // return sockfd;
     return accept4(listenfd_, (struct sockaddr *)&cliaddr_, &clilen_, SOCK_NONBLOCK);
   }
 

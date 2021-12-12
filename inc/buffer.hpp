@@ -3,9 +3,6 @@
 
 #include <spdlog/spdlog.h>
 
-// #include <cstddef>
-// #include <cstdint>
-
 #include "utils.hpp"
 
 namespace loevent {
@@ -92,7 +89,6 @@ class Buffer {
  private:
   std::vector<char> buffer_;
   const size_t MaxLength_;
-  // const size_t MaxLength_ = 10240;
   size_t writeOffset_ = 0;
   size_t readOffset_ = 0;
   const char kCRLF[2] = {'\r', '\n'};
