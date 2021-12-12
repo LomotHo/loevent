@@ -41,7 +41,6 @@ class HttpServer {
       } else if (status == HttpContextStatus::Broken) {
         conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
         conn->closeConnection();
-        // tcpServer_.closeConnection(conn->getFd());
       }
     });
   }
@@ -59,7 +58,6 @@ class HttpServer {
   void onRawReq(const TcpConnectionPtr &conn, const HttpRequest &req) {
     spdlog::debug("onRawReq");
     const std::string connection = req.getHeader("Connection");
-
     bool close = connection == "close" ||
                  (req.version() == HttpRequest::kHttp10 && connection != "Keep-Alive");
     HttpResponse response(close);
@@ -68,7 +66,6 @@ class HttpServer {
     } else {
       defaultHttpCallback(req, &response);
     }
-
     BufferPtr sendBuffer = response.genBuffer();
     // sendBuffer->printInfo();
     conn->send(sendBuffer);
