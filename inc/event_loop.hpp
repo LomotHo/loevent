@@ -52,7 +52,7 @@ class SingleEventLoop {
 
 SingleEventLoop::SingleEventLoop(int maxEventNum, int threadNum, int loopId)
     : maxEventNum_(maxEventNum), threadNum_(threadNum), id_(loopId) {
-  ioEventMap_ = new IoEventMap(threadNum > 0 ? true : false);
+  ioEventMap_ = new IoEventMap(threadNum_ > 0 ? true : false);
   tmpEvents_ = new struct epoll_event[maxEventNum];
   if ((epollfd_ = epoll_create(maxEventNum_)) < 0) {
     error_quit("Error creating epoll...");

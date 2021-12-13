@@ -99,7 +99,7 @@ void printBuf(const char *buffer, size_t len) {
 template <class T>
 class Map {
  public:
-  Map(bool enableLock) : enableLock_(enableLock){};
+  Map(bool enableLock = true) : enableLock_(enableLock){};
   void put(const int &key, T value) {
     if (enableLock_) {
       std::lock_guard lock(mtx_);
@@ -108,17 +108,9 @@ class Map {
       map_.emplace(key, value);
     }
   }
-  int size() {
-    if (enableLock_) {
-      std::lock_guard lock(mtx_);
-      return map_.size();
-    } else {
-      return map_.size();
-    }
-  }
   std::optional<T> get(const int &key) {
     if (enableLock_) {
-      std::lock_guard lock(mtx_);
+      std::shared_lock lock(mtx_);
       auto it = map_.find(key);
       if (it != map_.end()) return it->second;
       return {};
@@ -134,6 +126,14 @@ class Map {
       return map_.erase(key);
     } else {
       return map_.erase(key);
+    }
+  }
+  int size() {
+    if (enableLock_) {
+      std::shared_lock lock(mtx_);
+      return map_.size();
+    } else {
+      return map_.size();
     }
   }
 
