@@ -59,7 +59,7 @@ class Buffer {
   }
   bool write(const char* buf, size_t len) {
     if (manualWrite(len)) {
-      ::memcpy(end(), buf, len);
+      ::memcpy(end() - len, buf, len);
       return true;
     } else {
       return false;
