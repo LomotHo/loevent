@@ -18,40 +18,7 @@
 namespace loevent {
 
 typedef std::shared_ptr<IoEvent> IoEventPtr;
-
-class IoEventMap {
- public:
-  IoEventMap(bool enableLock) : enableLock_(enableLock){};
-  void put(const int &key, IoEventPtr value) {
-    // if (enableLock_) std::lock_guard lock(mtx_);
-    std::lock_guard lock(mtx_);
-    map_.emplace(key, value);
-  }
-  int size() {
-    // if (enableLock_) std::lock_guard lock(mtx_);
-    std::lock_guard lock(mtx_);
-    return map_.size();
-  }
-  std::optional<IoEventPtr> get(const int &key) {
-    // if (enableLock_) std::shared_lock lock(mtx_);
-    std::lock_guard lock(mtx_);
-    auto it = map_.find(key);
-    if (it != map_.end()) return it->second;
-    return {};
-  }
-
-  bool remove(const int &key) {
-    // if (enableLock_) std::lock_guard lock(mtx_);
-    std::lock_guard lock(mtx_);
-    auto n = map_.erase(key);
-    return n;
-  }
-
- private:
-  std::unordered_map<int, IoEventPtr> map_;
-  std::shared_mutex mtx_;
-  bool enableLock_;
-};
+typedef loevent::Map<IoEventPtr> IoEventMap;
 
 class SingleEventLoop {
  private:
