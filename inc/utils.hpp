@@ -9,6 +9,7 @@
 #include <shared_mutex>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace loevent {
 
@@ -51,33 +52,89 @@ void printBuf(const char *buffer, size_t len) {
   printf("\n");
 }
 
+// template <class T>
+// class Map {
+//  public:
+//   Map(bool enableLock) : enableLock_(enableLock) { map_.resize(10240); };
+//   void put(const int &key, T value) {
+//     if (enableLock_) {
+//       std::lock_guard lock(mtx_);
+//       map_[key] = value;
+//     } else {
+//       map_[key] = value;
+//     }
+//   }
+//   int size() {
+//     if (enableLock_) {
+//       std::lock_guard lock(mtx_);
+//       return map_.size();
+//     } else {
+//       return map_.size();
+//     }
+//   }
+//   std::optional<T> get(const int &key) {
+//     if (enableLock_) {
+//       std::lock_guard lock(mtx_);
+//       return map_[key];
+//     } else {
+//       return map_[key];
+//     }
+//   }
+//   void remove(const int &key) {
+//     if (enableLock_) {
+//       std::lock_guard lock(mtx_);
+//       map_[key] = std::nullopt;
+//     } else {
+//       map_[key] = std::nullopt;
+//     }
+//   }
+
+//  private:
+//   // std::unordered_map<int, T> map_;
+//   std::vector<std::optional<T>> map_;
+//   std::shared_mutex mtx_;
+//   bool enableLock_;
+// };
+
 template <class T>
 class Map {
  public:
   Map(bool enableLock) : enableLock_(enableLock){};
   void put(const int &key, T value) {
-    // if (enableLock_) std::lock_guard lock(mtx_);
-    std::lock_guard lock(mtx_);
-    map_.emplace(key, value);
+    if (enableLock_) {
+      std::lock_guard lock(mtx_);
+      map_.emplace(key, value);
+    } else {
+      map_.emplace(key, value);
+    }
   }
   int size() {
-    // if (enableLock_) std::lock_guard lock(mtx_);
-    std::lock_guard lock(mtx_);
-    return map_.size();
+    if (enableLock_) {
+      std::lock_guard lock(mtx_);
+      return map_.size();
+    } else {
+      return map_.size();
+    }
   }
   std::optional<T> get(const int &key) {
-    // if (enableLock_) std::shared_lock lock(mtx_);
-    std::lock_guard lock(mtx_);
-    auto it = map_.find(key);
-    if (it != map_.end()) return it->second;
-    return {};
+    if (enableLock_) {
+      std::lock_guard lock(mtx_);
+      auto it = map_.find(key);
+      if (it != map_.end()) return it->second;
+      return {};
+    } else {
+      auto it = map_.find(key);
+      if (it != map_.end()) return it->second;
+      return {};
+    }
   }
-
   bool remove(const int &key) {
-    // if (enableLock_) std::lock_guard lock(mtx_);
-    std::lock_guard lock(mtx_);
-    auto n = map_.erase(key);
-    return n;
+    if (enableLock_) {
+      std::lock_guard lock(mtx_);
+      return map_.erase(key);
+    } else {
+      return map_.erase(key);
+    }
   }
 
  private:

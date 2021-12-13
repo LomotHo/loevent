@@ -73,7 +73,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
         closeConnection();
         break;
       }
-      int n = recv(fd, buffer->end(), wb, MSG_DONTWAIT);
+      int n = recv(fd, buffer->end(), wb, MSG_NOSIGNAL | MSG_DONTWAIT);
       spdlog::debug("recv n: {} | writableBytes: {}", n, wb);
       if (n > 0) {
         buffer->manualWrite(n);
