@@ -29,6 +29,7 @@ class SingleEventLoop {
   struct epoll_event *tmpEvents_;
   int threadNum_;
   int id_;
+  IoEventPtr defaultIoEvent_;
   bool inThisLoop(int fd) {
     if (threadNum_ == 0) return true;
     return fd % threadNum_ == id_;
@@ -54,6 +55,9 @@ SingleEventLoop::SingleEventLoop(int maxEventNum, int threadNum, int loopId)
     : maxEventNum_(maxEventNum), threadNum_(threadNum), id_(loopId) {
   ioEventMap_ = new IoEventMap(threadNum_ > 0 ? true : false);
   tmpEvents_ = new struct epoll_event[maxEventNum];
+  defaultIoEvent_ = std::make_shared<IoEvent>();
+  defaultIoEvent_->setReadCallback([]() { spdlog::error("no ReadCallback"); });
+  defaultIoEvent_->setWriteCallback([]() { spdlog::error("no WriteCallback"); });
   if ((epollfd_ = epoll_create(maxEventNum_)) < 0) {
     error_quit("Error creating epoll...");
   }
@@ -61,11 +65,9 @@ SingleEventLoop::SingleEventLoop(int maxEventNum, int threadNum, int loopId)
 
 void SingleEventLoop::loop() {
   spdlog::info("EventLoop{} running...", id_);
-  IoEventPtr defaultIoEvent = std::make_shared<IoEvent>();
-  defaultIoEvent->setReadCallback([]() { spdlog::error("no ReadCallback"); });
-  defaultIoEvent->setWriteCallback([]() { spdlog::error("no WriteCallback"); });
   for (;;) {
-    int newEventNum = epoll_wait(epollfd_, tmpEvents_, maxEventNum_, -1);
+    // int newEventNum = epoll_wait(epollfd_, tmpEvents_, maxEventNum_, -1);
+    int newEventNum = epoll_wait(epollfd_, tmpEvents_, maxEventNum_, 1);
     if (newEventNum == -1) {
       error_quit("Error in epoll_wait...");
     }
@@ -73,11 +75,11 @@ void SingleEventLoop::loop() {
       int sockfd = tmpEvents_[i].data.fd;
       if (tmpEvents_[i].events & EPOLLIN) {
         spdlog::debug("fd {} readable", sockfd);
-        ioEventMap_->get(sockfd).value_or(defaultIoEvent)->readCallback();
+        ioEventMap_->get(sockfd).value_or(defaultIoEvent_)->readCallback();
       }
       if (tmpEvents_[i].events & EPOLLOUT) {
         spdlog::debug("fd {} writeable", sockfd);
-        ioEventMap_->get(sockfd).value_or(defaultIoEvent)->writeCallback();
+        ioEventMap_->get(sockfd).value_or(defaultIoEvent_)->writeCallback();
       }
     }
   }
