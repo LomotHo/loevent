@@ -59,7 +59,6 @@ class TcpServer {
     auto conn = std::make_shared<TcpConnection>(loop_, connName, sockfd, maxMessageLen_);
     conn->setMessageCallback(messageCallback_);
     if (connectionCallback_) {
-      // conn->setConnectionCallback(connectionCallback_);
       connectionCallback_(conn);
     }
     loop_.createIoEvent(sockfd, std::bind(&TcpConnection::onRecv, conn, sockfd),

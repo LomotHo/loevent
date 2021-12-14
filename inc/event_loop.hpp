@@ -66,7 +66,6 @@ SingleEventLoop::SingleEventLoop(int maxEventNum, int threadNum, int loopId)
 void SingleEventLoop::loop() {
   spdlog::info("EventLoop{} running...", id_);
   for (;;) {
-    // int newEventNum = epoll_wait(epollfd_, tmpEvents_, maxEventNum_, -1);
     int newEventNum = epoll_wait(epollfd_, tmpEvents_, maxEventNum_, 1);
     if (newEventNum == -1) {
       error_quit("Error in epoll_wait...");
