@@ -17,7 +17,7 @@ void onMessage(const TcpConnectionPtr &conn) {
 int main(int argc, char const *argv[]) {
   // spdlog::set_level(spdlog::level::debug);
   if (argc < 6) {
-    error_quit("Example: ./client <ip> <port> <connection_num> <blockSize>");
+    error_quit("Example: ./client <ip> <port> <connection_num> <blockSize> <threadNum>");
   }
   const char *ip = argv[1];
   int port = strtol(argv[2], NULL, 10);
