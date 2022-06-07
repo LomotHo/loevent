@@ -23,7 +23,7 @@ void onMessage(const TcpConnectionPtr &conn) {
 int main(int argc, char const *argv[]) {
   // spdlog::set_level(spdlog::level::debug);
   if (argc < 3) {
-    error_quit("Example: ./server [port] [threadNum]");
+    error_quit("Example: ./server <port> <threadNum>");
   }
   int port = strtol(argv[1], NULL, 10);
   int threadNum = strtol(argv[2], NULL, 10);

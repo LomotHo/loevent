@@ -2,4 +2,4 @@
 cd build
 cmake ..
 make
-./echo_server 3005
+./echo_server 3005 2
